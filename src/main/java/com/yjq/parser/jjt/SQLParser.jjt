@@ -1,0 +1,405 @@
+options {
+    STATIC = false ;
+    MULTI = true ;
+    VISITOR = true;
+}
+PARSER_BEGIN(SQLParser)
+package com.yjq.parser.jjt;
+
+import com.yjq.parser.select.*;
+public class SQLParser{
+    public static void main(String args[]) {
+        System.out.println("Reading from standard input...");
+        SQLParser p = new SQLParser(System.in);
+        try {
+          SimpleNode n = p.Start();
+          n.dump("");
+          System.out.println("Thank you.");
+        } catch (Exception e) {
+          System.out.println("Oops.");
+          System.out.println(e.getMessage());
+          e.printStackTrace();
+        }
+    }}
+PARSER_END(SQLParser)/*定义词法分析*/
+SKIP:{" "}
+SKIP:{"\n"|"\r"|"\r\n"}TOKEN:/*定义关键字*/
+{ <CREATE:"create">
+    | <TABLE:"table">
+    | <DROP:"drop">
+    | <DELETE:"delete">
+    | <SELECT:"select">
+    | <INSERT:"insert">
+    | <WHERE:"where">
+    | <FROM:"from">
+    | <INTO:"into">
+    | <DISTINCT:"distinct">
+    | <ALL:"all">
+    | <LIKE:"like">
+    | <ORDER:"order">
+    | <BY:"by">
+    | <AS:"as">
+    | <VALUES:"values">
+    | <AND:"and">
+    | <IN:"in">
+    | <INT:"int">
+    | <CHAR:"char">
+    | <DATE:"date">
+    | <IS:"is">
+    | <NOT:"not">
+    | <ISNULL:"ISNULL">
+    | <NOTNULL:"NOTNULL">
+    | <NULL:"null">
+    | <OR:"or">
+    | <BETWEEN:"between">
+    | <GROUP:"group">
+    | <HAVING:"having">
+    | <LIMIT:"limit">
+    | <OFFSET:"offset">
+    | <ASC:"asc">
+    | <DESC:"desc">
+    | <LAST:"last">
+    | <FIRST:"first">
+    | <NULLS:"nulls">
+    | <EXISTS:"exists">
+}
+TOKEN:/*定义符号*/
+{
+    <UNDERSCORE:"_">
+    | <COMMA:",">
+    | <SEMICOLON:";">
+    | <COLON:":">
+    | <LEFTPARENTHESES:"(">
+    | <RIGHTPARENTHESES:")">
+    | <EQUAL:"=">
+    | <PLUS:"+">
+    | <MINUS:"-">
+    | <TIMES:"*">
+    | <DIVIDE:"/">
+    | <DOT:".">
+    | <GREATERTHAN:">">
+    | <GREATERTHANOREQUALTO:">=">
+    | <LESSTHAN:"<">
+    | <LESSTHANOREQUALTO:"<=">
+    | <LEFTQUOTATION:"\"">
+    | <NOTEUQAL:"!=">
+    | <NOTEQUAL:"<>">
+    | <NOTGREATER:"!>">
+    | <NOTLESS:"!<">
+    | <LQUOTATION:"'">
+}
+TOKEN:/* 定义整数 */
+{
+    <INTEGER_LITERAL:["1"-"9"](<DIGIT>)*> |
+    <FLOAT_LITERAL: ["1"-"9"](["0"-"9"])* "." (["0"-"9"])* >
+}
+TOKEN:/*定义数字*/
+{
+    <#DIGIT:["0"-"9"]>
+}
+TOKEN:/* 定义标识符 */
+{
+    <IDENTIFIER:<LETTER>
+    |<LETTER><DIGIT>
+    | <LETTER>(<LETTER>| <DIGIT> | <UNDERSCORE>)*(<LETTER>| <DIGIT>)+>
+    | <#LETTER:["a"-"z", "A"-"Z"]>
+}/* 语法解析*/
+void TableName():{}
+{
+    <IDENTIFIER>
+    | LOOKAHEAD(2)<IDENTIFIER> <DOT> <IDENTIFIER>
+}
+void ColumnName():{}
+{
+    <IDENTIFIER>
+    | LOOKAHEAD(2)<IDENTIFIER> <DOT> <IDENTIFIER>
+}
+void Function():{}
+{
+    <IDENTIFIER><LEFTPARENTHESES>Value()[(<COMMA> Value())+]<RIGHTPARENTHESES>
+}
+void StringLiteral():{}
+{
+    <LQUOTATION><IDENTIFIER><LQUOTATION>
+}
+void NumericLiteral():{}
+{
+    <INTEGER_LITERAL> | <FLOAT_LITERAL>
+}
+void LiteralValue():{}
+{
+    NumericLiteral()
+}
+SimpleNode Start() : {}
+{
+    Statement() ";"
+    { return jjtThis; }
+}
+void Statement() : {}
+{
+    SelectStmt()|CreT()|DropT()|DelT()|InsT()
+}
+/**
+* 查询语句
+*/
+void SelectStmt():{}
+{
+    <SELECT>[<DISTINCT>]Result()<FROM>FromList()[<WHERE> Expression()| LOOKAHEAD(2)Exist()]
+    [GroupBy()] /* Group by having子句 */
+    [OrderBy() ] /* Order子句 */
+    [Limit()] /* Limit子句 */
+}
+void ArithmeticOperator():{}
+{
+    <DIVIDE>
+    | <PLUS>
+    | <MINUS>
+    | <TIMES>
+}
+void LogicalOperator():{}
+{
+    <OR>
+    | <AND>
+}
+void ComparisonOperator():{}
+{
+    <EQUAL>
+    | <LESSTHAN>
+    | <LESSTHANOREQUALTO>
+    | <GREATERTHAN>
+    | <GREATERTHANOREQUALTO>
+}
+/**
+* 逻辑-and表达式
+*/
+void AndExpression():{}
+{
+    [<NOT>] Condition()
+    [<AND>[<NOT>] Condition()]
+}
+/**
+* 逻辑-or表达式
+*/
+void OrExpression():{}
+{
+    AndExpression() [<OR> AndExpression()]
+}
+/**
+* 空值表达式
+*/
+void NullExpression():{}
+{
+    ColumnName()
+    <ISNULL>
+    | <IS> [<NOT>] <NULL>
+}
+/**
+* like匹配表达式
+*/
+void LikeExpression():{}{
+    ColumnName()
+    [<NOT>] <LIKE> StringLiteral()
+}
+/**
+* in判断表达式
+*/
+void InExpression():{}
+{
+    ColumnName()
+    [<NOT>] <IN> <LEFTPARENTHESES> Value() [(<COMMA> Value())+]<RIGHTPARENTHESES>
+}
+/**
+* between表达式
+*/
+void BetweenExpression():{}
+{
+    ColumnName()
+    [<NOT>] <BETWEEN> Value() <AND> Value()
+}
+/**
+* 比较表达式
+*/
+void ComparisonExpression():{}
+{
+    ColumnName()
+    (<EQUAL>
+    | <LESSTHAN>
+    | <LESSTHANOREQUALTO>
+    | <GREATERTHAN>
+    | <GREATERTHANOREQUALTO>
+    | <NOTEQUAL>
+    | <NOTGREATER>
+    | <NOTLESS> )
+    Value()
+}
+void Value():{}
+{
+    NumericLiteral() | LOOKAHEAD(2)StringLiteral() | ColumnName()
+}
+void Expression():{}
+{
+    OrExpression()
+}
+/**
+* where条件
+*/
+void Condition():{}
+{
+    LOOKAHEAD(2)ComparisonExpression()
+    | LOOKAHEAD(2)InExpression()
+    | LOOKAHEAD(2)BetweenExpression()
+    | LOOKAHEAD(2)LikeExpression()
+    | LOOKAHEAD(2)NullExpression()
+}
+/**
+* ORDER BY子句
+*/
+void OrderBy():{}
+{
+    <ORDER> <BY> ColumnName() [(<COMMA> ColumnName())+] [<ASC> |<DESC>][<NULL> (<FIRST> |<LAST>)]
+}
+/**
+* GROUP BY 子句
+*/
+void GroupBy():{}
+{
+    <GROUP> <BY> ColumnName() [(<COMMA>ColumnName() )+] [<HAVING> Expression() ]
+}
+/**
+* LIMIT子句
+*/
+void Limit():{}
+{
+    <LIMIT> <INTEGER_LITERAL> [<OFFSET> <INTEGER_LITERAL> | <COMMA> <INTEGER_LITERAL>]
+}
+/**
+* Exist
+*/
+void Exist():{}
+{
+    [<NOT>] <EXISTS> <LEFTPARENTHESES> SelectStmt() <RIGHTPARENTHESES>
+}
+void Operator():{}
+{
+    ArithmeticOperator() | LogicalOperator() | ComparisonOperator()
+}
+void Result():{}
+{
+    <TIMES> | ResultColumn()
+    [(<COMMA>ResultColumn())+]
+}
+void ResultColumn():{}
+{
+    LOOKAHEAD(4)TableName()<DOT><TIMES>
+    | LOOKAHEAD(4)ColumnName()[<AS> <IDENTIFIER>]
+    | LOOKAHEAD(2)Function()
+}
+//void Expr():{}
+//{
+//    LOOKAHEAD(2)ColumnName() Exprr()
+//    | LOOKAHEAD(2)LiteralValue() Exprr()
+//    | LOOKAHEAD(2)TableName()<DOT>ColumnName() Exprr()
+//    | LOOKAHEAD(2)Function()
+//    | LOOKAHEAD(2)<LEFTPARENTHESES> Expr()[(<COMMA>Expr())+]<RIGHTPARENTHESES> Exprr()
+//}
+//void Exprr():{}
+//{
+//    [Operator() Expr() Exprr()
+//    | LOOKAHEAD(2)[<NOT>] <IN> <LEFTPARENTHESES> [SelectStmt() | Expr()[(<COMMA>Expr())+]]<RIGHTPARENTHESES>/* IN语句*/Exprr()
+//    | LOOKAHEAD(2)[<NOT>] <BETWEEN> Expr() <AND> Expr() /* between */Exprr()
+//    | LOOKAHEAD(2)(<NOTNULL> | <ISNULL> | <NOT> <NULL> )Exprr()
+//    | LOOKAHEAD(2)[<NOT>] <LIKE> Expr() /* LIKE语句 */Exprr()]
+//}
+//void Exprrtemp():{}
+//{
+//    ColumnName()
+//    | LiteralValue()
+//    | TableName()<DOT>ColumnName()
+//    | FunctionName()<LEFTPARENTHESES> [Expr()[(<COMMA>Expr())+]] |[<COMMA>] <RIGHTPARENTHESES>
+//    | Expr() Operator() Expr()
+//    | <LEFTPARENTHESES> Expr()[(<COMMA>Expr())+]<RIGHTPARENTHESES>
+//    | Expr() [<NOT>] <IN> <LEFTPARENTHESES> [SelectStmt() | Expr()[(<COMMA>Expr())+]]<RIGHTPARENTHESES>/* IN语句*/
+//    | Expr() [<NOT>] <BETWEEN> Expr() <AND> Expr() /* between */
+//    | Expr() (<NOTNULL> | <ISNULL> | <NOT> <NULL> )
+//    | Expr() [<NOT>] <LIKE> Expr() /* LIKE语句 */
+//}
+void FromList():{}
+{
+    FromTable()[(<COMMA>FromTable())+]
+}
+void FromTable():{}
+{
+    TableName() [[<AS>] <IDENTIFIER>]
+    /* TODO:连接查询和嵌套查询 */
+    | LOOKAHEAD(2)<LEFTPARENTHESES> SelectStmt() <RIGHTPARENTHESES>
+}
+//void Condition():{}
+//{
+//    /*[Condition()<AND>Condition()]|*/
+//    /*[Tuple()<IN>Query()]*/
+//    Expr()
+//    | Expr() <IS> <NULL>
+//    | Expr() <NOTNULL>
+//    | Expr() <ISNULL>
+//}
+void Tuple():{}
+{
+    Attribute()
+}
+/*-------------------*/
+void CreT():{}
+{
+    <CREATE><TABLE>Relation()<LEFTPARENTHESES>ColList()<RIGHTPARENTHESES>
+}
+void ColList():{}
+{
+    Attribute()Type()[(<COMMA>Attribute()Type())+]
+}
+void Type():{}
+{
+    <INT>|<DATE>|<CHAR><LEFTPARENTHESES><INTEGER_LITERAL><RIGHTPARENTHESES>
+}
+/*-------------------*/
+void DropT():{}
+{
+    <DROP><TABLE>Relation()
+}
+void DelT():{}
+{
+    <DELETE>DelList()<FROM>FromList()<WHERE>Condition()
+}
+void DelList():{}
+{
+    Attribute()[(<COMMA>Attribute())+]
+}
+/*-------------------*/
+void InsT():{}
+{
+    <INSERT><INTO>Relation()<LEFTPARENTHESES>InList()<RIGHTPARENTHESES><VALUES><LEFTPARENTHESES>VList()<RIGHTPARENTHESES>
+}
+void InList():{}
+{
+    Attribute()[(<COMMA>Attribute())+]
+}
+void VList():{}
+{
+    <LEFTQUOTATION>IDENTIFIER()<LEFTQUOTATION>[(<COMMA><LEFTQUOTATION>IDENTIFIER()<LEFTQUOTATION>)+]
+}
+/*-------------------*/
+void Attribute():{}
+{
+    IDENTIFIER()
+}
+void Relation():{}
+{
+    IDENTIFIER()
+}
+void Pattern():{}
+{
+    <LQUOTATION>IDENTIFIER()<LQUOTATION>
+}
+/*-------------------*/
+void IDENTIFIER():{}
+{
+    <IDENTIFIER>
+}

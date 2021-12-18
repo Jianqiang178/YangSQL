@@ -1,0 +1,83 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */options{  static = true;}PARSER_BEGIN(cc005)package jjFile005;
+import java.util.Vector;
+public class cc005{  public static void main(String args []) throws ParseException  {      }}PARSER_END(cc005)
+//表示将会被词法分析器忽略的部分
+SKIP : { " "}
+SKIP : { "\n" | "\r" | "\r\n" }
+
+//基本的词法分析单元
+TOKEN : {
+  < ADD : "+" >
+| < MINUS : "-" >
+| < MULTIPLY : "*" >
+| < DIVIDE : "/" >
+| < ENDL: ";" >
+  }
+TOKEN : {
+  < INUMBER : ["1"-"9"](["0"-"9"])* > |
+  < FNUMBER: ["1"-"9"](["0"-"9"])* "." (["0"-"9"])* >
+  }
+
+//语法级定义
+String GetNumericOperator() : //数学运算符
+{
+  Token t;
+}
+{
+  (
+    t = < ADD >
+  | t = < MINUS >
+  | t = < MULTIPLY >
+  | t = < DIVIDE >
+  )
+  {
+    return t.image;
+  }
+}
+void subExp(Vector v) :
+{
+	Token t;
+	String s;
+}
+{
+    GetOperand(v)
+    (
+    	s=GetNumericOperator() {v.addElement(Operator.get(s));}
+    	GetOperand(v) 
+    )*
+
+}
+void GetOperand(Vector v)://操作数
+{
+	Token t;
+}
+{
+	(
+    t = <INUMBER> {v.addElement(t.image);}
+  | t = <FNUMBER> {v.addElement(t.image);}
+  | 
+  	(
+  		"("  {v.addElement(Operator.get("("));}
+  		subExp(v)
+  		")" {v.addElement(Operator.get(")"));}
+  	)
+  )
+  
+}
+
+void Start(Vector v) :
+{
+	Token t;
+	String s;
+}
+{
+    GetOperand(v) 
+    (
+    	s=GetNumericOperator() {v.addElement(Operator.get(s));}
+    	GetOperand(v)
+    )*
+    <ENDL>
+}
+
