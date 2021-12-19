@@ -5,9 +5,7 @@ public interface SQLParserVisitor
 {
   public Object visit(SimpleNode node, Object data);
   public Object visit(ASTTableName node, Object data);
-  public Object visit(ASTTableAlias node, Object data);
   public Object visit(ASTColumnName node, Object data);
-  public Object visit(ASTColumnAlias node, Object data);
   public Object visit(ASTFunction node, Object data);
   public Object visit(ASTStringLiteral node, Object data);
   public Object visit(ASTNumericLiteral node, Object data);
@@ -52,4 +50,4 @@ public interface SQLParserVisitor
   public Object visit(ASTPattern node, Object data);
   public Object visit(ASTIDENTIFIER node, Object data);
 }
-/* JavaCC - OriginalChecksum=40109cd79bc6f5cfab44c7d6e271fc3b (do not edit this line) */
+/* JavaCC - OriginalChecksum=7d858a0d9ac84381ffb88545deafb11f (do not edit this line) */

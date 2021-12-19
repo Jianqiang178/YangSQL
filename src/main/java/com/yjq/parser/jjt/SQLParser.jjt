@@ -6,7 +6,7 @@ options {
 PARSER_BEGIN(SQLParser)
 package com.yjq.parser.jjt;
 
-import com.yjq.parser.select.*;
+import com.sun.org.apache.bcel.internal.generic.ARETURN;import com.yjq.parser.jjt.*;
 public class SQLParser{
     public static void main(String args[]) {
         System.out.println("Reading from standard input...");
@@ -104,15 +104,15 @@ TOKEN:/* 定义标识符 */
     | <LETTER>(<LETTER>| <DIGIT> | <UNDERSCORE>)*(<LETTER>| <DIGIT>)+>
     | <#LETTER:["a"-"z", "A"-"Z"]>
 }/* 语法解析*/
-void TableName():{}
+ASTTableName TableName():{Token t; Token y;}
 {
-    <IDENTIFIER>
-    | LOOKAHEAD(2)<IDENTIFIER> <DOT> <IDENTIFIER>
+    t = <IDENTIFIER>{jjtThis.setName(t.image);return jjtThis;}
+    | LOOKAHEAD(2)t = <IDENTIFIER>{jjtThis.setDbName(t.image);jjtThis.setHavaDb(true);} <DOT> y = <IDENTIFIER>{jjtThis.setName(y.image);return jjtThis;}
 }
-void ColumnName():{}
+ASTColumnName ColumnName():{Token t;Token y;}
 {
-    <IDENTIFIER>
-    | LOOKAHEAD(2)<IDENTIFIER> <DOT> <IDENTIFIER>
+    t = <IDENTIFIER>{jjtThis.setName(t.image);return jjtThis;}
+    | LOOKAHEAD(2)t = <IDENTIFIER>{jjtThis.setTableName(t.image);jjtThis.setHaveTable(true);} <DOT> y = <IDENTIFIER>{jjtThis.setName(y.image);return jjtThis;}
 }
 void Function():{}
 {
@@ -135,19 +135,25 @@ SimpleNode Start() : {}
     Statement() ";"
     { return jjtThis; }
 }
-void Statement() : {}
+void Statement() : {ASTSelectStmt selectStmt;}
 {
-    SelectStmt()|CreT()|DropT()|DelT()|InsT()
+    selectStmt = SelectStmt(){jjtThis.setType(1);jjtThis.setAstSelectStmt(selectStmt);}
+    |CreT()|DropT()|DelT()|InsT()
 }
 /**
 * 查询语句
 */
-void SelectStmt():{}
+ASTSelectStmt SelectStmt():
 {
-    <SELECT>[<DISTINCT>]Result()<FROM>FromList()[<WHERE> Expression()| LOOKAHEAD(2)Exist()]
+    ASTResult astResult;
+    ASTFromList astFromList;
+}
+{
+    <SELECT>[<DISTINCT>]astResult = Result(){jjtThis.setAstResult(astResult);}<FROM>astFromList = FromList(){jjtThis.setAstFromList(astFromList);}[<WHERE> Expression()| LOOKAHEAD(2)Exist()]
     [GroupBy()] /* Group by having子句 */
     [OrderBy() ] /* Order子句 */
     [Limit()] /* Limit子句 */
+    {return jjtThis;}
 }
 void ArithmeticOperator():{}
 {
@@ -283,16 +289,25 @@ void Operator():{}
 {
     ArithmeticOperator() | LogicalOperator() | ComparisonOperator()
 }
-void Result():{}
+ASTResult Result():
 {
-    <TIMES> | ResultColumn()
-    [(<COMMA>ResultColumn())+]
+    ASTResultColumn astResultColumn;
 }
-void ResultColumn():{}
 {
-    LOOKAHEAD(4)TableName()<DOT><TIMES>
-    | LOOKAHEAD(4)ColumnName()[<AS> <IDENTIFIER>]
-    | LOOKAHEAD(2)Function()
+    <TIMES>{jjtThis.setAll(true);return jjtThis;} | astResultColumn = ResultColumn(){jjtThis.getResultColumns().add(astResultColumn);}
+    [(<COMMA>astResultColumn = ResultColumn(){jjtThis.getResultColumns().add(astResultColumn);})+]{return jjtThis;}
+}
+ASTResultColumn ResultColumn():
+{
+    ASTTableName tableName;
+    ASTColumnName columnName;
+    ASTFunction function;
+    Token t;
+}
+{
+    LOOKAHEAD(4)tableName = TableName()<DOT><TIMES>{jjtThis.setTableName(tableName);jjtThis.setType(1);return jjtThis;}
+    | LOOKAHEAD(4)columnName = ColumnName(){jjtThis.setColumnName(columnName);jjtThis.setType(2); }[<AS> t = <IDENTIFIER>{jjtThis.setHaveAlias(Boolean.TRUE);jjtThis.setAlias(t.image);}]{return jjtThis;}
+    | LOOKAHEAD(2)Function(){jjtThis.setType(3);return jjtThis;}
 }
 //void Expr():{}
 //{
@@ -323,15 +338,15 @@ void ResultColumn():{}
 //    | Expr() (<NOTNULL> | <ISNULL> | <NOT> <NULL> )
 //    | Expr() [<NOT>] <LIKE> Expr() /* LIKE语句 */
 //}
-void FromList():{}
+ASTFromList FromList():{ASTFromTable fromTable;}
 {
-    FromTable()[(<COMMA>FromTable())+]
+    fromTable = FromTable(){jjtThis.getFromTables().add(fromTable);}[(<COMMA>fromTable = FromTable(){jjtThis.getFromTables().add(fromTable);})+]{return jjtThis;}
 }
-void FromTable():{}
+ASTFromTable FromTable():{ASTTableName tableName;Token t;}
 {
-    TableName() [[<AS>] <IDENTIFIER>]
+    tableName = TableName(){jjtThis.setTableName(tableName);} [[<AS>] t = <IDENTIFIER>{jjtThis.setHavaAlias(true);jjtThis.setAlias(t.image);}]{return jjtThis;}
     /* TODO:连接查询和嵌套查询 */
-    | LOOKAHEAD(2)<LEFTPARENTHESES> SelectStmt() <RIGHTPARENTHESES>
+    | LOOKAHEAD(2)<LEFTPARENTHESES> SelectStmt() <RIGHTPARENTHESES>{return jjtThis;}
 }
 //void Condition():{}
 //{

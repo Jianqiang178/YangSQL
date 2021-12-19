@@ -4,20 +4,22 @@ package com.yjq.parser.jjt;
 
 public
 class ASTStart extends SimpleNode {
-  public ASTStart(int id) {
-    super(id);
-  }
+    public ASTStart(int id) {
+        super(id);
+    }
 
-  public ASTStart(SQLParser p, int id) {
-    super(p, id);
-  }
+    public ASTStart(SQLParser p, int id) {
+        super(p, id);
+    }
 
 
-  /** Accept the visitor. **/
-  public Object jjtAccept(SQLParserVisitor visitor, Object data) {
+    /**
+     * Accept the visitor.
+     **/
+    public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-    return
-    visitor.visit(this, data);
-  }
+        return
+                visitor.visit(this, data);
+    }
 }
 /* JavaCC - OriginalChecksum=d13c03e5d1e51f66ba1bb7e542b16751 (do not edit this line) */

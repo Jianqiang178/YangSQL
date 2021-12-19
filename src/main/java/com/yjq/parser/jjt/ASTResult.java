@@ -2,22 +2,42 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
-public
-class ASTResult extends SimpleNode {
-  public ASTResult(int id) {
-    super(id);
-  }
+import lombok.Data;
 
-  public ASTResult(SQLParser p, int id) {
-    super(p, id);
-  }
+import java.util.ArrayList;
+import java.util.List;
+@Data
+public class ASTResult extends SimpleNode {
+    private boolean all;
+    private List<ASTResultColumn> resultColumns = new ArrayList<>();
+    public ASTResult(int id) {
+        super(id);
+    }
+
+    public ASTResult(SQLParser p, int id) {
+        super(p, id);
+    }
 
 
-  /** Accept the visitor. **/
-  public Object jjtAccept(SQLParserVisitor visitor, Object data) {
+    /**
+     * Accept the visitor.
+     **/
+    public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-    return
-    visitor.visit(this, data);
-  }
+        return
+                visitor.visit(this, data);
+    }
+
+//    public List<ASTResultColumn> getResultColumns() {
+//        if(children.length == 0){
+//            all = true;
+//            return null;
+//        }
+//        List<ASTResultColumn> resultColumns = new ArrayList<>();
+//        for (Node child : children) {
+//            resultColumns.add((ASTResultColumn) child);
+//        }
+//        return resultColumns;
+//    }
 }
 /* JavaCC - OriginalChecksum=bc7abc471d556f068dca52d998526cb6 (do not edit this line) */

@@ -2,71 +2,117 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
-public
-class SimpleNode implements Node {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-  protected Node parent;
-  protected Node[] children;
-  protected int id;
-  protected Object value;
-  protected SQLParser parser;
+import java.util.ArrayList;
+import java.util.List;
 
-  public SimpleNode(int i) {
-    id = i;
-  }
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class SimpleNode implements Node {
 
-  public SimpleNode(SQLParser p, int i) {
-    this(i);
-    parser = p;
-  }
+    protected Node parent;
+    protected Node[] children;
+    protected int id;
+    protected Object value;
+    protected SQLParser parser;
 
-  public void jjtOpen() {
-  }
-
-  public void jjtClose() {
-  }
-
-  public void jjtSetParent(Node n) { parent = n; }
-  public Node jjtGetParent() { return parent; }
-
-  public void jjtAddChild(Node n, int i) {
-    if (children == null) {
-      children = new Node[i + 1];
-    } else if (i >= children.length) {
-      Node c[] = new Node[i + 1];
-      System.arraycopy(children, 0, c, 0, children.length);
-      children = c;
+    public SimpleNode(int i) {
+        id = i;
     }
-    children[i] = n;
-  }
 
-  public Node jjtGetChild(int i) {
-    return children[i];
-  }
-
-  public int jjtGetNumChildren() {
-    return (children == null) ? 0 : children.length;
-  }
-
-  public void jjtSetValue(Object value) { this.value = value; }
-  public Object jjtGetValue() { return value; }
-
-  /** Accept the visitor. **/
-  public Object jjtAccept(SQLParserVisitor visitor, Object data)
-{
-    return visitor.visit(this, data);
-  }
-
-  /** Accept the visitor. **/
-  public Object childrenAccept(SQLParserVisitor visitor, Object data)
-{
-    if (children != null) {
-      for (int i = 0; i < children.length; ++i) {
-        children[i].jjtAccept(visitor, data);
-      }
+    public SimpleNode(SQLParser p, int i) {
+        this(i);
+        parser = p;
     }
-    return data;
-  }
+
+    public void jjtOpen() {
+    }
+
+    public void jjtClose() {
+    }
+
+    public void jjtSetParent(Node n) {
+        parent = n;
+    }
+
+    public Node jjtGetParent() {
+        return parent;
+    }
+
+    public void jjtAddChild(Node n, int i) {
+        if (children == null) {
+            children = new Node[i + 1];
+        } else if (i >= children.length) {
+            Node c[] = new Node[i + 1];
+            System.arraycopy(children, 0, c, 0, children.length);
+            children = c;
+        }
+        children[i] = n;
+    }
+
+    /**
+     * 根据名字查找子节点
+     *
+     * @param name
+     * @return
+     */
+    public List<Node> getChildByName(String name) {
+        List<Node> result = new ArrayList<>();
+        for (Node child : children) {
+            if (SQLParserTreeConstants.jjtNodeName[child.getId()].equals(name)) {
+                result.add(child);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * 获取节点名称
+     *
+     * @return
+     */
+    public String getName() {
+        return SQLParserTreeConstants.jjtNodeName[getId()];
+    }
+
+    public Node jjtGetChild(int i) {
+        return children[i];
+    }
+
+    public int jjtGetNumChildren() {
+        return (children == null) ? 0 : children.length;
+    }
+
+    public void jjtSetValue(Object value) {
+        this.value = value;
+    }
+
+    public Object jjtGetValue() {
+        return value;
+    }
+
+    /**
+     * Accept the visitor.
+     **/
+    public Object jjtAccept(SQLParserVisitor visitor, Object data) {
+        return visitor.visit(this, data);
+    }
+
+    /**
+     * Accept the visitor.
+     **/
+    public Object childrenAccept(SQLParserVisitor visitor, Object data) {
+        if (children != null) {
+            for (int i = 0; i < children.length; ++i) {
+                children[i].jjtAccept(visitor, data);
+            }
+        }
+        return data;
+    }
 
   /* You can override these two methods in subclasses of SimpleNode to
      customize the way the node appears when the tree is dumped.  If
@@ -74,29 +120,32 @@ class SimpleNode implements Node {
      toString(String), otherwise overriding toString() is probably all
      you need to do. */
 
-  public String toString() {
-    return SQLParserTreeConstants.jjtNodeName[id];
-  }
-  public String toString(String prefix) { return prefix + toString(); }
+    public String toString() {
+        return SQLParserTreeConstants.jjtNodeName[id];
+    }
+
+    public String toString(String prefix) {
+        return prefix + toString() + "(" + getId() + ")";
+    }
 
   /* Override this method if you want to customize how the node dumps
      out its children. */
 
-  public void dump(String prefix) {
-    System.out.println(toString(prefix));
-    if (children != null) {
-      for (int i = 0; i < children.length; ++i) {
-        SimpleNode n = (SimpleNode)children[i];
-        if (n != null) {
-          n.dump(prefix + " ");
+    public void dump(String prefix) {
+        System.out.println(toString(prefix));
+        if (children != null) {
+            for (int i = 0; i < children.length; ++i) {
+                SimpleNode n = (SimpleNode) children[i];
+                if (n != null) {
+                    n.dump(prefix + " ");
+                }
+            }
         }
-      }
     }
-  }
 
-  public int getId() {
-    return id;
-  }
+    public int getId() {
+        return id;
+    }
 }
 
 /* JavaCC - OriginalChecksum=34341cfc0e2929a60de85ed35e593864 (do not edit this line) */

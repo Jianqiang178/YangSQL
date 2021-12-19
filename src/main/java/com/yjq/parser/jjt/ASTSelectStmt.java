@@ -2,22 +2,36 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
-public
-class ASTSelectStmt extends SimpleNode {
-  public ASTSelectStmt(int id) {
-    super(id);
-  }
+import lombok.Data;
 
-  public ASTSelectStmt(SQLParser p, int id) {
-    super(p, id);
-  }
+@Data
+public class ASTSelectStmt extends SimpleNode {
+    private ASTResult astResult;
+    private ASTFromList astFromList;
+    public ASTSelectStmt(int id) {
+        super(id);
+    }
+
+    public ASTSelectStmt(SQLParser p, int id) {
+        super(p, id);
+    }
 
 
-  /** Accept the visitor. **/
-  public Object jjtAccept(SQLParserVisitor visitor, Object data) {
+    /**
+     * Accept the visitor.
+     **/
+    public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-    return
-    visitor.visit(this, data);
-  }
+        return
+                visitor.visit(this, data);
+    }
+
+    /**
+     * 处理查询语句
+     */
+    public void exec() {
+        System.out.println("Dealing SelectStmt");
+
+    }
 }
 /* JavaCC - OriginalChecksum=95f72d371e396ddb23d5c37d973f3612 (do not edit this line) */

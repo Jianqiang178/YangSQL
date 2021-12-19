@@ -2,22 +2,65 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
-public
-class ASTStatement extends SimpleNode {
-  public ASTStatement(int id) {
-    super(id);
-  }
+import com.yjq.parser.select.SelectStatement;
+import lombok.Data;
 
-  public ASTStatement(SQLParser p, int id) {
-    super(p, id);
-  }
+@Data
+public class ASTStatement extends SimpleNode {
+    private Integer type;
+    private ASTSelectStmt astSelectStmt;
+    public ASTStatement(int id) {
+        super(id);
+    }
+
+    public ASTStatement(SQLParser p, int id) {
+        super(p, id);
+    }
 
 
-  /** Accept the visitor. **/
-  public Object jjtAccept(SQLParserVisitor visitor, Object data) {
+    /**
+     * Accept the visitor.
+     **/
+    public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-    return
-    visitor.visit(this, data);
-  }
+        return
+                visitor.visit(this, data);
+    }
+
+    /**
+     * 处理statement语句，有且只有一个子节点，select/create/update/delete
+     */
+    public void exec(){
+        if(children.length == 0){
+            System.out.println("Statement节点无子节点");
+            return;
+        }
+        Node type = children[0];
+        String name =  SQLParserTreeConstants.jjtNodeName[type.getId()];
+        System.out.println("Input Type:" + name);
+        switch (name){
+            case "SelctStmt":
+                System.out.println("Dealing SelectStmt");
+                ASTSelectStmt selectStatement = (ASTSelectStmt) type;
+                selectStatement.exec();
+                break;
+            case "UpdateStmt":
+                // TODO 更新语句
+                System.out.println("Dealing SelectStmt");
+                break;
+            case "CreateStmt":
+                // TODO 建表语句
+                System.out.println("Dealing SelectStmt");
+                break;
+            case "DeleteStmt":
+                // TODO 删除语句
+                System.out.println("Dealing SelectStmt");
+                break;
+            default:
+                System.out.println("");
+                break;
+
+        }
+    }
 }
 /* JavaCC - OriginalChecksum=3796e10b29acecf856f40b1d92189c0b (do not edit this line) */

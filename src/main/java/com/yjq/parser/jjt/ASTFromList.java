@@ -2,8 +2,14 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
-public
-class ASTFromList extends SimpleNode {
+import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+public class ASTFromList extends SimpleNode {
+  private List<ASTFromTable> fromTables = new ArrayList<>();
   public ASTFromList(int id) {
     super(id);
   }

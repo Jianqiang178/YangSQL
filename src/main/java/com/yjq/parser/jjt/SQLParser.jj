@@ -7,7 +7,7 @@
 PARSER_BEGIN(SQLParser)
 package com.yjq.parser.jjt;
 
-import com.yjq.parser.select.*;
+import com.sun.org.apache.bcel.internal.generic.ARETURN;import com.yjq.parser.jjt.*;
 public class SQLParser/*@bgen(jjtree)*/implements SQLParserTreeConstants/*@egen*/{/*@bgen(jjtree)*/
   protected JJTSQLParserState jjtree = new JJTSQLParserState();
 
@@ -108,16 +108,26 @@ TOKEN:/* \u7039\u6c2b\u7b9f\u93cd\u56ea\u7611\u7ed7\ufffd */
     | <LETTER>(<LETTER>| <DIGIT> | <UNDERSCORE>)*(<LETTER>| <DIGIT>)+>
     | <#LETTER:["a"-"z", "A"-"Z"]>
 }/* \u7487\ue15f\u7876\u7459\uff46\u703d*/
-void TableName():{/*@bgen(jjtree) TableName */
-  ASTTableName jjtn000 = new ASTTableName(JJTTABLENAME);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+ASTTableName TableName():{/*@bgen(jjtree) TableName */
+                          ASTTableName jjtn000 = new ASTTableName(JJTTABLENAME);
+                          boolean jjtc000 = true;
+                          jjtree.openNodeScope(jjtn000);
+/*@egen*/Token t; Token y;}
 {/*@bgen(jjtree) TableName */
     try {
 /*@egen*/
-    <IDENTIFIER>
-    | LOOKAHEAD(2)<IDENTIFIER> <DOT> <IDENTIFIER>/*@bgen(jjtree)*/
+    t = <IDENTIFIER>/*@bgen(jjtree)*/
+                    {
+                      jjtree.closeNodeScope(jjtn000, true);
+                      jjtc000 = false;
+                    }
+/*@egen*/{jjtn000.setName(t.image);return jjtn000;}
+    | LOOKAHEAD(2)t = <IDENTIFIER>{jjtn000.setDbName(t.image);jjtn000.setHavaDb(true);} <DOT> y = <IDENTIFIER>/*@bgen(jjtree)*/
+                                                                                                              {
+                                                                                                                jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                jjtc000 = false;
+                                                                                                              }
+/*@egen*/{jjtn000.setName(y.image);return jjtn000;}/*@bgen(jjtree)*/
     } finally {
       if (jjtc000) {
         jjtree.closeNodeScope(jjtn000, true);
@@ -125,48 +135,26 @@ void TableName():{/*@bgen(jjtree) TableName */
     }
 /*@egen*/
 }
-void TableAlias():{/*@bgen(jjtree) TableAlias */
-  ASTTableAlias jjtn000 = new ASTTableAlias(JJTTABLEALIAS);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) TableAlias */
-    try {
-/*@egen*/
-    <IDENTIFIER>/*@bgen(jjtree)*/
-    } finally {
-      if (jjtc000) {
-        jjtree.closeNodeScope(jjtn000, true);
-      }
-    }
-/*@egen*/
-}
-void ColumnName():{/*@bgen(jjtree) ColumnName */
-  ASTColumnName jjtn000 = new ASTColumnName(JJTCOLUMNNAME);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+ASTColumnName ColumnName():{/*@bgen(jjtree) ColumnName */
+                            ASTColumnName jjtn000 = new ASTColumnName(JJTCOLUMNNAME);
+                            boolean jjtc000 = true;
+                            jjtree.openNodeScope(jjtn000);
+/*@egen*/Token t;Token y;}
 {/*@bgen(jjtree) ColumnName */
     try {
 /*@egen*/
-    <IDENTIFIER>
-    | LOOKAHEAD(2)<IDENTIFIER> <DOT> <IDENTIFIER>/*@bgen(jjtree)*/
-    } finally {
-      if (jjtc000) {
-        jjtree.closeNodeScope(jjtn000, true);
-      }
-    }
-/*@egen*/
-}
-void ColumnAlias():{/*@bgen(jjtree) ColumnAlias */
-  ASTColumnAlias jjtn000 = new ASTColumnAlias(JJTCOLUMNALIAS);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) ColumnAlias */
-    try {
-/*@egen*/
-    <IDENTIFIER>/*@bgen(jjtree)*/
+    t = <IDENTIFIER>/*@bgen(jjtree)*/
+                    {
+                      jjtree.closeNodeScope(jjtn000, true);
+                      jjtc000 = false;
+                    }
+/*@egen*/{jjtn000.setName(t.image);return jjtn000;}
+    | LOOKAHEAD(2)t = <IDENTIFIER>{jjtn000.setTableName(t.image);jjtn000.setHaveTable(true);} <DOT> y = <IDENTIFIER>/*@bgen(jjtree)*/
+                                                                                                                    {
+                                                                                                                      jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                      jjtc000 = false;
+                                                                                                                    }
+/*@egen*/{jjtn000.setName(y.image);return jjtn000;}/*@bgen(jjtree)*/
     } finally {
       if (jjtc000) {
         jjtree.closeNodeScope(jjtn000, true);
@@ -303,14 +291,20 @@ SimpleNode Start() : {/*@bgen(jjtree) Start */
 /*@egen*/
 }
 void Statement() : {/*@bgen(jjtree) Statement */
-  ASTStatement jjtn000 = new ASTStatement(JJTSTATEMENT);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+                    ASTStatement jjtn000 = new ASTStatement(JJTSTATEMENT);
+                    boolean jjtc000 = true;
+                    jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTSelectStmt selectStmt;}
 {/*@bgen(jjtree) Statement */
     try {
 /*@egen*/
-    SelectStmt()|CreT()|DropT()|DelT()|InsT()/*@bgen(jjtree)*/
+    selectStmt = SelectStmt()/*@bgen(jjtree)*/
+                             {
+                               jjtree.closeNodeScope(jjtn000, true);
+                               jjtc000 = false;
+                             }
+/*@egen*/{jjtn000.setType(1);jjtn000.setAstSelectStmt(selectStmt);}
+    |CreT()|DropT()|DelT()|InsT()/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -335,18 +329,28 @@ void Statement() : {/*@bgen(jjtree) Statement */
 /**
 * \u93cc\u30e8\ue1d7\u7487\ue15e\u5f5e
 */
-void SelectStmt():{/*@bgen(jjtree) SelectStmt */
-  ASTSelectStmt jjtn000 = new ASTSelectStmt(JJTSELECTSTMT);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+ASTSelectStmt SelectStmt():
+{/*@bgen(jjtree) SelectStmt */
+    ASTSelectStmt jjtn000 = new ASTSelectStmt(JJTSELECTSTMT);
+    boolean jjtc000 = true;
+    jjtree.openNodeScope(jjtn000);
+/*@egen*/
+    ASTResult astResult;
+    ASTFromList astFromList;
+}
 {/*@bgen(jjtree) SelectStmt */
     try {
 /*@egen*/
-    <SELECT>[<DISTINCT>]Result()<FROM>FromList()[<WHERE> Expression()| LOOKAHEAD(2)Exist()]
+    <SELECT>[<DISTINCT>]astResult = Result(){jjtn000.setAstResult(astResult);}<FROM>astFromList = FromList(){jjtn000.setAstFromList(astFromList);}[<WHERE> Expression()| LOOKAHEAD(2)Exist()]
     [GroupBy()] /* Group by having\u701b\u612c\u5f5e */
     [OrderBy() ] /* Order\u701b\u612c\u5f5e */
     [Limit()]/*@bgen(jjtree)*/
+    {
+      jjtree.closeNodeScope(jjtn000, true);
+      jjtc000 = false;
+    }
+/*@egen*/ /* Limit\u701b\u612c\u5f5e */
+    {return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -366,7 +370,7 @@ void SelectStmt():{/*@bgen(jjtree) SelectStmt */
         jjtree.closeNodeScope(jjtn000, true);
       }
     }
-/*@egen*/ /* Limit\u701b\u612c\u5f5e */
+/*@egen*/
 }
 void ArithmeticOperator():{/*@bgen(jjtree) ArithmeticOperator */
   ASTArithmeticOperator jjtn000 = new ASTArithmeticOperator(JJTARITHMETICOPERATOR);
@@ -914,16 +918,29 @@ void Operator():{/*@bgen(jjtree) Operator */
     }
 /*@egen*/
 }
-void Result():{/*@bgen(jjtree) Result */
-  ASTResult jjtn000 = new ASTResult(JJTRESULT);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+ASTResult Result():
+{/*@bgen(jjtree) Result */
+    ASTResult jjtn000 = new ASTResult(JJTRESULT);
+    boolean jjtc000 = true;
+    jjtree.openNodeScope(jjtn000);
+/*@egen*/
+    ASTResultColumn astResultColumn;
+}
 {/*@bgen(jjtree) Result */
     try {
 /*@egen*/
-    <TIMES> | ResultColumn()
-    [(<COMMA>ResultColumn())+]/*@bgen(jjtree)*/
+    <TIMES>/*@bgen(jjtree)*/
+           {
+             jjtree.closeNodeScope(jjtn000, true);
+             jjtc000 = false;
+           }
+/*@egen*/{jjtn000.setAll(true);return jjtn000;} | astResultColumn = ResultColumn(){jjtn000.getResultColumns().add(astResultColumn);}
+    [(<COMMA>astResultColumn = ResultColumn(){jjtn000.getResultColumns().add(astResultColumn);})+]/*@bgen(jjtree)*/
+                                                                                                  {
+                                                                                                    jjtree.closeNodeScope(jjtn000, true);
+                                                                                                    jjtc000 = false;
+                                                                                                  }
+/*@egen*/{return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -945,17 +962,38 @@ void Result():{/*@bgen(jjtree) Result */
     }
 /*@egen*/
 }
-void ResultColumn():{/*@bgen(jjtree) ResultColumn */
-  ASTResultColumn jjtn000 = new ASTResultColumn(JJTRESULTCOLUMN);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+ASTResultColumn ResultColumn():
+{/*@bgen(jjtree) ResultColumn */
+    ASTResultColumn jjtn000 = new ASTResultColumn(JJTRESULTCOLUMN);
+    boolean jjtc000 = true;
+    jjtree.openNodeScope(jjtn000);
+/*@egen*/
+    ASTTableName tableName;
+    ASTColumnName columnName;
+    ASTFunction function;
+    Token t;
+}
 {/*@bgen(jjtree) ResultColumn */
     try {
 /*@egen*/
-    LOOKAHEAD(4)TableName()<DOT><TIMES>
-    | LOOKAHEAD(4)ColumnName()[<AS> <IDENTIFIER>]
+    LOOKAHEAD(4)tableName = TableName()<DOT><TIMES>/*@bgen(jjtree)*/
+                                                   {
+                                                     jjtree.closeNodeScope(jjtn000, true);
+                                                     jjtc000 = false;
+                                                   }
+/*@egen*/{jjtn000.setTableName(tableName);jjtn000.setType(1);return jjtn000;}
+    | LOOKAHEAD(4)columnName = ColumnName(){jjtn000.setColumnName(columnName);jjtn000.setType(2); }[<AS> t = <IDENTIFIER>{jjtn000.setHaveAlias(Boolean.TRUE);jjtn000.setAlias(t.image);}]/*@bgen(jjtree)*/
+                                                                                                                                                                                         {
+                                                                                                                                                                                           jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                                                                                           jjtc000 = false;
+                                                                                                                                                                                         }
+/*@egen*/{return jjtn000;}
     | LOOKAHEAD(2)Function()/*@bgen(jjtree)*/
+                            {
+                              jjtree.closeNodeScope(jjtn000, true);
+                              jjtc000 = false;
+                            }
+/*@egen*/{jjtn000.setType(3);return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -1006,15 +1044,20 @@ void ResultColumn():{/*@bgen(jjtree) ResultColumn */
 //    | Expr() (<NOTNULL> | <ISNULL> | <NOT> <NULL> )
 //    | Expr() [<NOT>] <LIKE> Expr() /* LIKE\u7487\ue15e\u5f5e */
 //}
-void FromList():{/*@bgen(jjtree) FromList */
-  ASTFromList jjtn000 = new ASTFromList(JJTFROMLIST);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+ASTFromList FromList():{/*@bgen(jjtree) FromList */
+                        ASTFromList jjtn000 = new ASTFromList(JJTFROMLIST);
+                        boolean jjtc000 = true;
+                        jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTFromTable fromTable;}
 {/*@bgen(jjtree) FromList */
     try {
 /*@egen*/
-    FromTable()[(<COMMA>FromTable())+]/*@bgen(jjtree)*/
+    fromTable = FromTable(){jjtn000.getFromTables().add(fromTable);}[(<COMMA>fromTable = FromTable(){jjtn000.getFromTables().add(fromTable);})+]/*@bgen(jjtree)*/
+                                                                                                                                                {
+                                                                                                                                                  jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                                                  jjtc000 = false;
+                                                                                                                                                }
+/*@egen*/{return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -1036,17 +1079,27 @@ void FromList():{/*@bgen(jjtree) FromList */
     }
 /*@egen*/
 }
-void FromTable():{/*@bgen(jjtree) FromTable */
-  ASTFromTable jjtn000 = new ASTFromTable(JJTFROMTABLE);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+ASTFromTable FromTable():{/*@bgen(jjtree) FromTable */
+                          ASTFromTable jjtn000 = new ASTFromTable(JJTFROMTABLE);
+                          boolean jjtc000 = true;
+                          jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTTableName tableName;Token t;}
 {/*@bgen(jjtree) FromTable */
     try {
 /*@egen*/
-    TableName() [[<AS>] <IDENTIFIER>]
+    tableName = TableName(){jjtn000.setTableName(tableName);} [[<AS>] t = <IDENTIFIER>{jjtn000.setHavaAlias(true);jjtn000.setAlias(t.image);}]/*@bgen(jjtree)*/
+                                                                                                                                              {
+                                                                                                                                                jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                                                jjtc000 = false;
+                                                                                                                                              }
+/*@egen*/{return jjtn000;}
     /* TODO:\u6769\u70b4\u5e34\u93cc\u30e8\ue1d7\u935c\u5c7d\u7975\u6fc2\u6941\u7161\u7487\ufffd */
     | LOOKAHEAD(2)<LEFTPARENTHESES> SelectStmt() <RIGHTPARENTHESES>/*@bgen(jjtree)*/
+                                                                   {
+                                                                     jjtree.closeNodeScope(jjtn000, true);
+                                                                     jjtc000 = false;
+                                                                   }
+/*@egen*/{return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);

@@ -4,59 +4,55 @@ package com.yjq.parser.jjt;
 public interface SQLParserTreeConstants
 {
   public int JJTTABLENAME = 0;
-  public int JJTTABLEALIAS = 1;
-  public int JJTCOLUMNNAME = 2;
-  public int JJTCOLUMNALIAS = 3;
-  public int JJTFUNCTION = 4;
-  public int JJTSTRINGLITERAL = 5;
-  public int JJTNUMERICLITERAL = 6;
-  public int JJTLITERALVALUE = 7;
-  public int JJTSTART = 8;
-  public int JJTSTATEMENT = 9;
-  public int JJTSELECTSTMT = 10;
-  public int JJTARITHMETICOPERATOR = 11;
-  public int JJTLOGICALOPERATOR = 12;
-  public int JJTCOMPARISONOPERATOR = 13;
-  public int JJTANDEXPRESSION = 14;
-  public int JJTOREXPRESSION = 15;
-  public int JJTNULLEXPRESSION = 16;
-  public int JJTLIKEEXPRESSION = 17;
-  public int JJTINEXPRESSION = 18;
-  public int JJTBETWEENEXPRESSION = 19;
-  public int JJTCOMPARISONEXPRESSION = 20;
-  public int JJTVALUE = 21;
-  public int JJTEXPRESSION = 22;
-  public int JJTCONDITION = 23;
-  public int JJTORDERBY = 24;
-  public int JJTGROUPBY = 25;
-  public int JJTLIMIT = 26;
-  public int JJTEXIST = 27;
-  public int JJTOPERATOR = 28;
-  public int JJTRESULT = 29;
-  public int JJTRESULTCOLUMN = 30;
-  public int JJTFROMLIST = 31;
-  public int JJTFROMTABLE = 32;
-  public int JJTTUPLE = 33;
-  public int JJTCRET = 34;
-  public int JJTCOLLIST = 35;
-  public int JJTTYPE = 36;
-  public int JJTDROPT = 37;
-  public int JJTDELT = 38;
-  public int JJTDELLIST = 39;
-  public int JJTINST = 40;
-  public int JJTINLIST = 41;
-  public int JJTVLIST = 42;
-  public int JJTATTRIBUTE = 43;
-  public int JJTRELATION = 44;
-  public int JJTPATTERN = 45;
-  public int JJTIDENTIFIER = 46;
+  public int JJTCOLUMNNAME = 1;
+  public int JJTFUNCTION = 2;
+  public int JJTSTRINGLITERAL = 3;
+  public int JJTNUMERICLITERAL = 4;
+  public int JJTLITERALVALUE = 5;
+  public int JJTSTART = 6;
+  public int JJTSTATEMENT = 7;
+  public int JJTSELECTSTMT = 8;
+  public int JJTARITHMETICOPERATOR = 9;
+  public int JJTLOGICALOPERATOR = 10;
+  public int JJTCOMPARISONOPERATOR = 11;
+  public int JJTANDEXPRESSION = 12;
+  public int JJTOREXPRESSION = 13;
+  public int JJTNULLEXPRESSION = 14;
+  public int JJTLIKEEXPRESSION = 15;
+  public int JJTINEXPRESSION = 16;
+  public int JJTBETWEENEXPRESSION = 17;
+  public int JJTCOMPARISONEXPRESSION = 18;
+  public int JJTVALUE = 19;
+  public int JJTEXPRESSION = 20;
+  public int JJTCONDITION = 21;
+  public int JJTORDERBY = 22;
+  public int JJTGROUPBY = 23;
+  public int JJTLIMIT = 24;
+  public int JJTEXIST = 25;
+  public int JJTOPERATOR = 26;
+  public int JJTRESULT = 27;
+  public int JJTRESULTCOLUMN = 28;
+  public int JJTFROMLIST = 29;
+  public int JJTFROMTABLE = 30;
+  public int JJTTUPLE = 31;
+  public int JJTCRET = 32;
+  public int JJTCOLLIST = 33;
+  public int JJTTYPE = 34;
+  public int JJTDROPT = 35;
+  public int JJTDELT = 36;
+  public int JJTDELLIST = 37;
+  public int JJTINST = 38;
+  public int JJTINLIST = 39;
+  public int JJTVLIST = 40;
+  public int JJTATTRIBUTE = 41;
+  public int JJTRELATION = 42;
+  public int JJTPATTERN = 43;
+  public int JJTIDENTIFIER = 44;
 
 
   public String[] jjtNodeName = {
     "TableName",
-    "TableAlias",
     "ColumnName",
-    "ColumnAlias",
     "Function",
     "StringLiteral",
     "NumericLiteral",
@@ -102,4 +98,4 @@ public interface SQLParserTreeConstants
     "IDENTIFIER",
   };
 }
-/* JavaCC - OriginalChecksum=6c12b54b89c718922ccb488e1c6346ee (do not edit this line) */
+/* JavaCC - OriginalChecksum=fc9854538493193cdaf93a720e5e0dc3 (do not edit this line) */
