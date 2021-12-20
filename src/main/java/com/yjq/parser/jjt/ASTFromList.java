@@ -9,21 +9,23 @@ import java.util.List;
 
 @Data
 public class ASTFromList extends SimpleNode {
-  private List<ASTFromTable> fromTables = new ArrayList<>();
-  public ASTFromList(int id) {
-    super(id);
-  }
+    private List<ASTFromTable> fromTables = new ArrayList<>();
 
-  public ASTFromList(SQLParser p, int id) {
-    super(p, id);
-  }
+    public ASTFromList(int id) {
+        super(id);
+    }
+
+    public ASTFromList(SQLParser p, int id) {
+        super(p, id);
+    }
 
 
-  /** Accept the visitor. **/
-  public Object jjtAccept(SQLParserVisitor visitor, Object data) {
+    /**
+     * Accept the visitor.
+     **/
+    public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-    return
-    visitor.visit(this, data);
-  }
+        return visitor.visit(this, data);
+    }
 }
 /* JavaCC - OriginalChecksum=8b6c10fd836c45b19b6258ccf87bc310 (do not edit this line) */

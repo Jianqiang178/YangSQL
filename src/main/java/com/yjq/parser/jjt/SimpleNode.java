@@ -2,12 +2,15 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
+import com.yjq.parser.data.GridData;
+import com.yjq.parser.exceptions.YangSQLException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -68,6 +71,15 @@ public class SimpleNode implements Node {
             }
         }
         return result;
+    }
+    public void setColumnValue(Map<String, GridData> dataMap) throws YangSQLException {
+        if(getName().equals("ColumnName")){
+            ASTColumnName columnName = (ASTColumnName) this;
+            columnName.setDataValue(dataMap);
+        }
+        for (Node child : children) {
+            ((SimpleNode) child).setColumnValue(dataMap);
+        }
     }
 
     /**

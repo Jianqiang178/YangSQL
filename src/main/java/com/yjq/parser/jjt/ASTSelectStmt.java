@@ -4,6 +4,8 @@ package com.yjq.parser.jjt;
 
 import lombok.Data;
 
+import java.util.Map;
+
 @Data
 public class ASTSelectStmt extends SimpleNode {
     private ASTResult astResult;
@@ -23,8 +25,7 @@ public class ASTSelectStmt extends SimpleNode {
      **/
     public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-        return
-                visitor.visit(this, data);
+        return visitor.visit(this, data);
     }
 
     /**

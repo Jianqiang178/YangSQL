@@ -24,5 +24,6 @@ public class ASTExpression extends SimpleNode {
         return
                 visitor.visit(this, data);
     }
+
 }
 /* JavaCC - OriginalChecksum=4aafb90f098a9fe1ecd5a984f7d5a953 (do not edit this line) */
