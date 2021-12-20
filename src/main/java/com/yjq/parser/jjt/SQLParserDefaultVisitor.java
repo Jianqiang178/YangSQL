@@ -105,31 +105,37 @@ public class SQLParserDefaultVisitor implements SQLParserVisitor{
   public Object visit(ASTTuple node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTCreT node, Object data){
+  public Object visit(ASTCreateStmt node, Object data){
     return defaultVisit(node, data);
   }
   public Object visit(ASTColList node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTType node, Object data){
+  public Object visit(ASTField node, Object data){
     return defaultVisit(node, data);
   }
   public Object visit(ASTDropT node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTDelT node, Object data){
+  public Object visit(ASTDeleteStmt node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTDelList node, Object data){
+  public Object visit(ASTUpdateStmt node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTInsT node, Object data){
+  public Object visit(ASTSetList node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTInList node, Object data){
+  public Object visit(ASTUpdateValue node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTVList node, Object data){
+  public Object visit(ASTInsertStmt node, Object data){
+    return defaultVisit(node, data);
+  }
+  public Object visit(ASTColumnList node, Object data){
+    return defaultVisit(node, data);
+  }
+  public Object visit(ASTValueList node, Object data){
     return defaultVisit(node, data);
   }
   public Object visit(ASTAttribute node, Object data){
@@ -145,4 +151,4 @@ public class SQLParserDefaultVisitor implements SQLParserVisitor{
     return defaultVisit(node, data);
   }
 }
-/* JavaCC - OriginalChecksum=397f1a11dfbb355fbb4f91427acda2fb (do not edit this line) */
+/* JavaCC - OriginalChecksum=02059b575023b5c2e2a542922081174e (do not edit this line) */

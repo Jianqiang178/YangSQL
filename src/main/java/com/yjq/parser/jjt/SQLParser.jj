@@ -36,9 +36,11 @@ SKIP:{"\n"|"\r"|"\r\n"}TOKEN:/*\u7039\u6c2b\u7b9f\u934f\u62bd\u656d\u701b\ufffd*
     | <TABLE:"table">
     | <DROP:"drop">
     | <DELETE:"delete">
+    | <UPDATE:"update">
     | <SELECT:"select">
     | <INSERT:"insert">
     | <WHERE:"where">
+    | <SET:"set">
     | <FROM:"from">
     | <INTO:"into">
     | <DISTINCT:"distinct">
@@ -53,6 +55,7 @@ SKIP:{"\n"|"\r"|"\r\n"}TOKEN:/*\u7039\u6c2b\u7b9f\u934f\u62bd\u656d\u701b\ufffd*
     | <INT:"int">
     | <CHAR:"char">
     | <DATE:"date">
+    | <DOUBLE:"double">
     | <IS:"is">
     | <NOT:"not">
     | <ISNULL:"ISNULL">
@@ -324,7 +327,7 @@ void Statement() : {/*@bgen(jjtree) Statement */
                                jjtc000 = false;
                              }
 /*@egen*/{jjtn000.setType(1);jjtn000.setAstSelectStmt(selectStmt);}
-    |CreT()|DropT()|DelT()|InsT()/*@bgen(jjtree)*/
+    |CreateStmt()|DropT()|DeleteStmt()|InsertStmt()|UpdateStmt()/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -1261,16 +1264,22 @@ void Tuple():{/*@bgen(jjtree) Tuple */
     }
 /*@egen*/
 }
-/*-------------------*/
-void CreT():{/*@bgen(jjtree) CreT */
-  ASTCreT jjtn000 = new ASTCreT(JJTCRET);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) CreT */
+/*--------- Create \u7487\ue15e\u5f5e ----------*/
+ASTCreateStmt CreateStmt():{/*@bgen(jjtree) CreateStmt */
+                            ASTCreateStmt jjtn000 = new ASTCreateStmt(JJTCREATESTMT);
+                            boolean jjtc000 = true;
+                            jjtree.openNodeScope(jjtn000);
+/*@egen*/Token t;ASTColList colList;}
+{/*@bgen(jjtree) CreateStmt */
     try {
 /*@egen*/
-    <CREATE><TABLE>Relation()<LEFTPARENTHESES>ColList()<RIGHTPARENTHESES>/*@bgen(jjtree)*/
+    <CREATE><TABLE>t = <IDENTIFIER>{jjtn000.setTableName(t.image);} <LEFTPARENTHESES>colList = ColList(){jjtn000.setColList(colList);}<RIGHTPARENTHESES>/*@bgen(jjtree)*/
+    {
+      jjtree.closeNodeScope(jjtn000, true);
+      jjtc000 = false;
+    }
+/*@egen*/
+    {return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -1292,15 +1301,20 @@ void CreT():{/*@bgen(jjtree) CreT */
     }
 /*@egen*/
 }
-void ColList():{/*@bgen(jjtree) ColList */
-  ASTColList jjtn000 = new ASTColList(JJTCOLLIST);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
+ASTColList ColList():{/*@bgen(jjtree) ColList */
+                      ASTColList jjtn000 = new ASTColList(JJTCOLLIST);
+                      boolean jjtc000 = true;
+                      jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTField field;}
 {/*@bgen(jjtree) ColList */
     try {
 /*@egen*/
-    Attribute()Type()[(<COMMA>Attribute()Type())+]/*@bgen(jjtree)*/
+    field = Field(){jjtn000.getFields().add(field);}[(<COMMA>field = Field(){jjtn000.getFields().add(field);})+]/*@bgen(jjtree)*/
+                                                                                                                {
+                                                                                                                  jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                  jjtc000 = false;
+                                                                                                                }
+/*@egen*/{return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -1322,15 +1336,22 @@ void ColList():{/*@bgen(jjtree) ColList */
     }
 /*@egen*/
 }
-void Type():{/*@bgen(jjtree) Type */
-  ASTType jjtn000 = new ASTType(JJTTYPE);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) Type */
+ASTField Field():{/*@bgen(jjtree) Field */
+                  ASTField jjtn000 = new ASTField(JJTFIELD);
+                  boolean jjtc000 = true;
+                  jjtree.openNodeScope(jjtn000);
+/*@egen*/Token t;}
+{/*@bgen(jjtree) Field */
     try {
 /*@egen*/
-    <INT>|<DATE>|<CHAR><LEFTPARENTHESES><INTEGER_LITERAL><RIGHTPARENTHESES>/*@bgen(jjtree)*/
+    t = <IDENTIFIER>{jjtn000.setName(t.image);}
+    (t = <INT>| t = <DATE>| t = <DOUBLE> | t = <CHAR><LEFTPARENTHESES><INTEGER_LITERAL><RIGHTPARENTHESES>)/*@bgen(jjtree)*/
+    {
+      jjtree.closeNodeScope(jjtn000, true);
+      jjtc000 = false;
+    }
+/*@egen*/
+    {jjtn000.setDataType(t.image);return jjtn000;}/*@bgen(jjtree)*/
     } finally {
       if (jjtc000) {
         jjtree.closeNodeScope(jjtn000, true);
@@ -1338,7 +1359,7 @@ void Type():{/*@bgen(jjtree) Type */
     }
 /*@egen*/
 }
-/*-------------------*/
+/*--------- DELETE & DROP \u7487\ue15e\u5f5e ----------*/
 void DropT():{/*@bgen(jjtree) DropT */
   ASTDropT jjtn000 = new ASTDropT(JJTDROPT);
   boolean jjtc000 = true;
@@ -1369,15 +1390,20 @@ void DropT():{/*@bgen(jjtree) DropT */
     }
 /*@egen*/
 }
-void DelT():{/*@bgen(jjtree) DelT */
-  ASTDelT jjtn000 = new ASTDelT(JJTDELT);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) DelT */
+ASTDeleteStmt DeleteStmt():{/*@bgen(jjtree) DeleteStmt */
+                            ASTDeleteStmt jjtn000 = new ASTDeleteStmt(JJTDELETESTMT);
+                            boolean jjtc000 = true;
+                            jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTTableName tableName; ASTExpression expression;}
+{/*@bgen(jjtree) DeleteStmt */
     try {
 /*@egen*/
-    <DELETE>DelList()<FROM>FromList()<WHERE>Condition()/*@bgen(jjtree)*/
+    <DELETE><FROM>tableName = TableName(){jjtn000.setTableName(tableName);}<WHERE>expression = Expression()/*@bgen(jjtree)*/
+                                                                                                           {
+                                                                                                             jjtree.closeNodeScope(jjtn000, true);
+                                                                                                             jjtc000 = false;
+                                                                                                           }
+/*@egen*/{jjtn000.setExpression(expression);return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -1399,15 +1425,23 @@ void DelT():{/*@bgen(jjtree) DelT */
     }
 /*@egen*/
 }
-void DelList():{/*@bgen(jjtree) DelList */
-  ASTDelList jjtn000 = new ASTDelList(JJTDELLIST);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) DelList */
+/*-------- UPDATE \u7487\ue15e\u5f5e -----------*/
+ASTUpdateStmt UpdateStmt():{/*@bgen(jjtree) UpdateStmt */
+                            ASTUpdateStmt jjtn000 = new ASTUpdateStmt(JJTUPDATESTMT);
+                            boolean jjtc000 = true;
+                            jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTTableName tableName;ASTSetList setList; ASTExpression expression;}
+{/*@bgen(jjtree) UpdateStmt */
     try {
 /*@egen*/
-    Attribute()[(<COMMA>Attribute())+]/*@bgen(jjtree)*/
+    <UPDATE> tableName = TableName(){jjtn000.setTableName(tableName);}
+    <SET> setList = SetList(){jjtn000.setSetList(setList);}
+    <WHERE> expression = Expression()/*@bgen(jjtree)*/
+                                     {
+                                       jjtree.closeNodeScope(jjtn000, true);
+                                       jjtc000 = false;
+                                     }
+/*@egen*/{jjtn000.setExpression(expression);return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -1429,16 +1463,20 @@ void DelList():{/*@bgen(jjtree) DelList */
     }
 /*@egen*/
 }
-/*-------------------*/
-void InsT():{/*@bgen(jjtree) InsT */
-  ASTInsT jjtn000 = new ASTInsT(JJTINST);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) InsT */
+ASTSetList SetList():{/*@bgen(jjtree) SetList */
+                      ASTSetList jjtn000 = new ASTSetList(JJTSETLIST);
+                      boolean jjtc000 = true;
+                      jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTUpdateValue updateValue;}
+{/*@bgen(jjtree) SetList */
     try {
 /*@egen*/
-    <INSERT><INTO>Relation()<LEFTPARENTHESES>InList()<RIGHTPARENTHESES><VALUES><LEFTPARENTHESES>VList()<RIGHTPARENTHESES>/*@bgen(jjtree)*/
+    updateValue = UpdateValue(){jjtn000.getUpdateValues().add(updateValue);} [(<COMMA> updateValue = UpdateValue(){jjtn000.getUpdateValues().add(updateValue);})+]/*@bgen(jjtree)*/
+                                                                                                                                                                  {
+                                                                                                                                                                    jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                                                                    jjtc000 = false;
+                                                                                                                                                                  }
+/*@egen*/{return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -1460,15 +1498,20 @@ void InsT():{/*@bgen(jjtree) InsT */
     }
 /*@egen*/
 }
-void InList():{/*@bgen(jjtree) InList */
-  ASTInList jjtn000 = new ASTInList(JJTINLIST);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) InList */
+ASTUpdateValue UpdateValue():{/*@bgen(jjtree) UpdateValue */
+                              ASTUpdateValue jjtn000 = new ASTUpdateValue(JJTUPDATEVALUE);
+                              boolean jjtc000 = true;
+                              jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTColumnName columnName;ASTValue value;}
+{/*@bgen(jjtree) UpdateValue */
     try {
 /*@egen*/
-    Attribute()[(<COMMA>Attribute())+]/*@bgen(jjtree)*/
+    columnName = ColumnName(){jjtn000.setColumnName(columnName);} <EQUAL> value = Value()/*@bgen(jjtree)*/
+                                                                                         {
+                                                                                           jjtree.closeNodeScope(jjtn000, true);
+                                                                                           jjtc000 = false;
+                                                                                         }
+/*@egen*/{jjtn000.setValue(value); return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -1490,15 +1533,89 @@ void InList():{/*@bgen(jjtree) InList */
     }
 /*@egen*/
 }
-void VList():{/*@bgen(jjtree) VList */
-  ASTVList jjtn000 = new ASTVList(JJTVLIST);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) VList */
+/*-------- INSERT \u7487\ue15e\u5f5e -----------*/
+void InsertStmt():{/*@bgen(jjtree) InsertStmt */
+                   ASTInsertStmt jjtn000 = new ASTInsertStmt(JJTINSERTSTMT);
+                   boolean jjtc000 = true;
+                   jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTTableName tableName; ASTColumnList columnList; ASTValueList valueList;}
+{/*@bgen(jjtree) InsertStmt */
     try {
 /*@egen*/
-    <LEFTQUOTATION>IDENTIFIER()<LEFTQUOTATION>[(<COMMA><LEFTQUOTATION>IDENTIFIER()<LEFTQUOTATION>)+]/*@bgen(jjtree)*/
+    <INSERT><INTO>tableName = TableName(){jjtn000.setTableName(tableName);}[<LEFTPARENTHESES>columnList = ColumnList(){jjtn000.setColumnList(columnList);}<RIGHTPARENTHESES>]
+    <VALUES><LEFTPARENTHESES>valueList = ValueList(){jjtn000.setValueList(valueList);}<RIGHTPARENTHESES>/*@bgen(jjtree)*/
+    } catch (Throwable jjte000) {
+      if (jjtc000) {
+        jjtree.clearNodeScope(jjtn000);
+        jjtc000 = false;
+      } else {
+        jjtree.popNode();
+      }
+      if (jjte000 instanceof RuntimeException) {
+        throw (RuntimeException)jjte000;
+      }
+      if (jjte000 instanceof ParseException) {
+        throw (ParseException)jjte000;
+      }
+      throw (Error)jjte000;
+    } finally {
+      if (jjtc000) {
+        jjtree.closeNodeScope(jjtn000, true);
+      }
+    }
+/*@egen*/
+}
+ASTColumnList ColumnList():{/*@bgen(jjtree) ColumnList */
+                            ASTColumnList jjtn000 = new ASTColumnList(JJTCOLUMNLIST);
+                            boolean jjtc000 = true;
+                            jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTColumnName columnName;}
+{/*@bgen(jjtree) ColumnList */
+    try {
+/*@egen*/
+    columnName = ColumnName(){jjtn000.getColumnNames().add(columnName);}[(<COMMA> columnName = ColumnName(){jjtn000.getColumnNames().add(columnName);})+]/*@bgen(jjtree)*/
+    {
+      jjtree.closeNodeScope(jjtn000, true);
+      jjtc000 = false;
+    }
+/*@egen*/
+    {return jjtn000;}/*@bgen(jjtree)*/
+    } catch (Throwable jjte000) {
+      if (jjtc000) {
+        jjtree.clearNodeScope(jjtn000);
+        jjtc000 = false;
+      } else {
+        jjtree.popNode();
+      }
+      if (jjte000 instanceof RuntimeException) {
+        throw (RuntimeException)jjte000;
+      }
+      if (jjte000 instanceof ParseException) {
+        throw (ParseException)jjte000;
+      }
+      throw (Error)jjte000;
+    } finally {
+      if (jjtc000) {
+        jjtree.closeNodeScope(jjtn000, true);
+      }
+    }
+/*@egen*/
+}
+ASTValueList ValueList():{/*@bgen(jjtree) ValueList */
+                          ASTValueList jjtn000 = new ASTValueList(JJTVALUELIST);
+                          boolean jjtc000 = true;
+                          jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTValue value;}
+{/*@bgen(jjtree) ValueList */
+    try {
+/*@egen*/
+    value = Value(){jjtn000.getValues().add(value);}[(<COMMA> value = Value(){jjtn000.getValues().add(value);})+]/*@bgen(jjtree)*/
+    {
+      jjtree.closeNodeScope(jjtn000, true);
+      jjtc000 = false;
+    }
+/*@egen*/
+    {return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);

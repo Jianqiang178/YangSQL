@@ -36,18 +36,20 @@ public interface SQLParserVisitor
   public Object visit(ASTFromList node, Object data);
   public Object visit(ASTFromTable node, Object data);
   public Object visit(ASTTuple node, Object data);
-  public Object visit(ASTCreT node, Object data);
+  public Object visit(ASTCreateStmt node, Object data);
   public Object visit(ASTColList node, Object data);
-  public Object visit(ASTType node, Object data);
+  public Object visit(ASTField node, Object data);
   public Object visit(ASTDropT node, Object data);
-  public Object visit(ASTDelT node, Object data);
-  public Object visit(ASTDelList node, Object data);
-  public Object visit(ASTInsT node, Object data);
-  public Object visit(ASTInList node, Object data);
-  public Object visit(ASTVList node, Object data);
+  public Object visit(ASTDeleteStmt node, Object data);
+  public Object visit(ASTUpdateStmt node, Object data);
+  public Object visit(ASTSetList node, Object data);
+  public Object visit(ASTUpdateValue node, Object data);
+  public Object visit(ASTInsertStmt node, Object data);
+  public Object visit(ASTColumnList node, Object data);
+  public Object visit(ASTValueList node, Object data);
   public Object visit(ASTAttribute node, Object data);
   public Object visit(ASTRelation node, Object data);
   public Object visit(ASTPattern node, Object data);
   public Object visit(ASTIDENTIFIER node, Object data);
 }
-/* JavaCC - OriginalChecksum=7d858a0d9ac84381ffb88545deafb11f (do not edit this line) */
+/* JavaCC - OriginalChecksum=b05a209d4a97b81ffd9630b395d94751 (do not edit this line) */

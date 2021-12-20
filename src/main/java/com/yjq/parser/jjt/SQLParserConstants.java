@@ -19,127 +19,133 @@ public interface SQLParserConstants {
   /** RegularExpression Id. */
   int DELETE = 8;
   /** RegularExpression Id. */
-  int SELECT = 9;
+  int UPDATE = 9;
   /** RegularExpression Id. */
-  int INSERT = 10;
+  int SELECT = 10;
   /** RegularExpression Id. */
-  int WHERE = 11;
+  int INSERT = 11;
   /** RegularExpression Id. */
-  int FROM = 12;
+  int WHERE = 12;
   /** RegularExpression Id. */
-  int INTO = 13;
+  int SET = 13;
   /** RegularExpression Id. */
-  int DISTINCT = 14;
+  int FROM = 14;
   /** RegularExpression Id. */
-  int ALL = 15;
+  int INTO = 15;
   /** RegularExpression Id. */
-  int LIKE = 16;
+  int DISTINCT = 16;
   /** RegularExpression Id. */
-  int ORDER = 17;
+  int ALL = 17;
   /** RegularExpression Id. */
-  int BY = 18;
+  int LIKE = 18;
   /** RegularExpression Id. */
-  int AS = 19;
+  int ORDER = 19;
   /** RegularExpression Id. */
-  int VALUES = 20;
+  int BY = 20;
   /** RegularExpression Id. */
-  int AND = 21;
+  int AS = 21;
   /** RegularExpression Id. */
-  int IN = 22;
+  int VALUES = 22;
   /** RegularExpression Id. */
-  int INT = 23;
+  int AND = 23;
   /** RegularExpression Id. */
-  int CHAR = 24;
+  int IN = 24;
   /** RegularExpression Id. */
-  int DATE = 25;
+  int INT = 25;
   /** RegularExpression Id. */
-  int IS = 26;
+  int CHAR = 26;
   /** RegularExpression Id. */
-  int NOT = 27;
+  int DATE = 27;
   /** RegularExpression Id. */
-  int ISNULL = 28;
+  int DOUBLE = 28;
   /** RegularExpression Id. */
-  int NOTNULL = 29;
+  int IS = 29;
   /** RegularExpression Id. */
-  int NULL = 30;
+  int NOT = 30;
   /** RegularExpression Id. */
-  int OR = 31;
+  int ISNULL = 31;
   /** RegularExpression Id. */
-  int BETWEEN = 32;
+  int NOTNULL = 32;
   /** RegularExpression Id. */
-  int GROUP = 33;
+  int NULL = 33;
   /** RegularExpression Id. */
-  int HAVING = 34;
+  int OR = 34;
   /** RegularExpression Id. */
-  int LIMIT = 35;
+  int BETWEEN = 35;
   /** RegularExpression Id. */
-  int OFFSET = 36;
+  int GROUP = 36;
   /** RegularExpression Id. */
-  int ASC = 37;
+  int HAVING = 37;
   /** RegularExpression Id. */
-  int DESC = 38;
+  int LIMIT = 38;
   /** RegularExpression Id. */
-  int LAST = 39;
+  int OFFSET = 39;
   /** RegularExpression Id. */
-  int FIRST = 40;
+  int ASC = 40;
   /** RegularExpression Id. */
-  int NULLS = 41;
+  int DESC = 41;
   /** RegularExpression Id. */
-  int EXISTS = 42;
+  int LAST = 42;
   /** RegularExpression Id. */
-  int UNDERSCORE = 43;
+  int FIRST = 43;
   /** RegularExpression Id. */
-  int COMMA = 44;
+  int NULLS = 44;
   /** RegularExpression Id. */
-  int SEMICOLON = 45;
+  int EXISTS = 45;
   /** RegularExpression Id. */
-  int COLON = 46;
+  int UNDERSCORE = 46;
   /** RegularExpression Id. */
-  int LEFTPARENTHESES = 47;
+  int COMMA = 47;
   /** RegularExpression Id. */
-  int RIGHTPARENTHESES = 48;
+  int SEMICOLON = 48;
   /** RegularExpression Id. */
-  int EQUAL = 49;
+  int COLON = 49;
   /** RegularExpression Id. */
-  int PLUS = 50;
+  int LEFTPARENTHESES = 50;
   /** RegularExpression Id. */
-  int MINUS = 51;
+  int RIGHTPARENTHESES = 51;
   /** RegularExpression Id. */
-  int TIMES = 52;
+  int EQUAL = 52;
   /** RegularExpression Id. */
-  int DIVIDE = 53;
+  int PLUS = 53;
   /** RegularExpression Id. */
-  int DOT = 54;
+  int MINUS = 54;
   /** RegularExpression Id. */
-  int GREATERTHAN = 55;
+  int TIMES = 55;
   /** RegularExpression Id. */
-  int GREATERTHANOREQUALTO = 56;
+  int DIVIDE = 56;
   /** RegularExpression Id. */
-  int LESSTHAN = 57;
+  int DOT = 57;
   /** RegularExpression Id. */
-  int LESSTHANOREQUALTO = 58;
+  int GREATERTHAN = 58;
   /** RegularExpression Id. */
-  int LEFTQUOTATION = 59;
+  int GREATERTHANOREQUALTO = 59;
   /** RegularExpression Id. */
-  int NOTEUQAL = 60;
+  int LESSTHAN = 60;
   /** RegularExpression Id. */
-  int NOTEQUAL = 61;
+  int LESSTHANOREQUALTO = 61;
   /** RegularExpression Id. */
-  int NOTGREATER = 62;
+  int LEFTQUOTATION = 62;
   /** RegularExpression Id. */
-  int NOTLESS = 63;
+  int NOTEUQAL = 63;
   /** RegularExpression Id. */
-  int LQUOTATION = 64;
+  int NOTEQUAL = 64;
   /** RegularExpression Id. */
-  int INTEGER_LITERAL = 65;
+  int NOTGREATER = 65;
   /** RegularExpression Id. */
-  int FLOAT_LITERAL = 66;
+  int NOTLESS = 66;
   /** RegularExpression Id. */
-  int DIGIT = 67;
+  int LQUOTATION = 67;
   /** RegularExpression Id. */
-  int IDENTIFIER = 68;
+  int INTEGER_LITERAL = 68;
   /** RegularExpression Id. */
-  int LETTER = 69;
+  int FLOAT_LITERAL = 69;
+  /** RegularExpression Id. */
+  int DIGIT = 70;
+  /** RegularExpression Id. */
+  int IDENTIFIER = 71;
+  /** RegularExpression Id. */
+  int LETTER = 72;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -155,9 +161,11 @@ public interface SQLParserConstants {
     "\"table\"",
     "\"drop\"",
     "\"delete\"",
+    "\"update\"",
     "\"select\"",
     "\"insert\"",
     "\"where\"",
+    "\"set\"",
     "\"from\"",
     "\"into\"",
     "\"distinct\"",
@@ -172,6 +180,7 @@ public interface SQLParserConstants {
     "\"int\"",
     "\"char\"",
     "\"date\"",
+    "\"double\"",
     "\"is\"",
     "\"not\"",
     "\"ISNULL\"",

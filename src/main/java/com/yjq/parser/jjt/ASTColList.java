@@ -2,22 +2,30 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
-public
-class ASTColList extends SimpleNode {
-  public ASTColList(int id) {
-    super(id);
-  }
+import lombok.Data;
 
-  public ASTColList(SQLParser p, int id) {
-    super(p, id);
-  }
+import java.util.ArrayList;
+import java.util.List;
+
+@Data
+public class ASTColList extends SimpleNode {
+    private List<ASTField> fields = new ArrayList<>();
+    public ASTColList(int id) {
+        super(id);
+    }
+
+    public ASTColList(SQLParser p, int id) {
+        super(p, id);
+    }
 
 
-  /** Accept the visitor. **/
-  public Object jjtAccept(SQLParserVisitor visitor, Object data) {
+    /**
+     * Accept the visitor.
+     **/
+    public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-    return
-    visitor.visit(this, data);
-  }
+        return
+                visitor.visit(this, data);
+    }
 }
 /* JavaCC - OriginalChecksum=7c6b791ccb5fef2d4263329b0cf618d2 (do not edit this line) */

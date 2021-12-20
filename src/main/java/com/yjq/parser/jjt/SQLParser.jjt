@@ -32,9 +32,11 @@ SKIP:{"\n"|"\r"|"\r\n"}TOKEN:/*定义关键字*/
     | <TABLE:"table">
     | <DROP:"drop">
     | <DELETE:"delete">
+    | <UPDATE:"update">
     | <SELECT:"select">
     | <INSERT:"insert">
     | <WHERE:"where">
+    | <SET:"set">
     | <FROM:"from">
     | <INTO:"into">
     | <DISTINCT:"distinct">
@@ -49,6 +51,7 @@ SKIP:{"\n"|"\r"|"\r\n"}TOKEN:/*定义关键字*/
     | <INT:"int">
     | <CHAR:"char">
     | <DATE:"date">
+    | <DOUBLE:"double">
     | <IS:"is">
     | <NOT:"not">
     | <ISNULL:"ISNULL">
@@ -143,7 +146,7 @@ SimpleNode Start() : {}
 void Statement() : {ASTSelectStmt selectStmt;}
 {
     selectStmt = SelectStmt(){jjtThis.setType(1);jjtThis.setAstSelectStmt(selectStmt);}
-    |CreT()|DropT()|DelT()|InsT()
+    |CreateStmt()|DropT()|DeleteStmt()|InsertStmt()|UpdateStmt()
 }
 /**
 * 查询语句
@@ -387,44 +390,61 @@ void Tuple():{}
 {
     Attribute()
 }
-/*-------------------*/
-void CreT():{}
+/*--------- Create 语句 ----------*/
+ASTCreateStmt CreateStmt():{Token t;ASTColList colList;}
 {
-    <CREATE><TABLE>Relation()<LEFTPARENTHESES>ColList()<RIGHTPARENTHESES>
+    <CREATE><TABLE>t = <IDENTIFIER>{jjtThis.setTableName(t.image);} <LEFTPARENTHESES>colList = ColList(){jjtThis.setColList(colList);}<RIGHTPARENTHESES>
+    {return jjtThis;}
 }
-void ColList():{}
+ASTColList ColList():{ASTField field;}
 {
-    Attribute()Type()[(<COMMA>Attribute()Type())+]
+    field = Field(){jjtThis.getFields().add(field);}[(<COMMA>field = Field(){jjtThis.getFields().add(field);})+]{return jjtThis;}
 }
-void Type():{}
+ASTField Field():{Token t;}
 {
-    <INT>|<DATE>|<CHAR><LEFTPARENTHESES><INTEGER_LITERAL><RIGHTPARENTHESES>
+    t = <IDENTIFIER>{jjtThis.setName(t.image);}
+    (t = <INT>| t = <DATE>| t = <DOUBLE> | t = <CHAR><LEFTPARENTHESES><INTEGER_LITERAL><RIGHTPARENTHESES>)
+    {jjtThis.setDataType(t.image);return jjtThis;}
 }
-/*-------------------*/
+/*--------- DELETE & DROP 语句 ----------*/
 void DropT():{}
 {
     <DROP><TABLE>Relation()
 }
-void DelT():{}
+ASTDeleteStmt DeleteStmt():{ASTTableName tableName; ASTExpression expression;}
 {
-    <DELETE>DelList()<FROM>FromList()<WHERE>Condition()
+    <DELETE><FROM>tableName = TableName(){jjtThis.setTableName(tableName);}<WHERE>expression = Expression(){jjtThis.setExpression(expression);return jjtThis;}
 }
-void DelList():{}
+/*-------- UPDATE 语句 -----------*/
+ASTUpdateStmt UpdateStmt():{ASTTableName tableName;ASTSetList setList; ASTExpression expression;}
 {
-    Attribute()[(<COMMA>Attribute())+]
+    <UPDATE> tableName = TableName(){jjtThis.setTableName(tableName);}
+    <SET> setList = SetList(){jjtThis.setSetList(setList);}
+    <WHERE> expression = Expression(){jjtThis.setExpression(expression);return jjtThis;}
 }
-/*-------------------*/
-void InsT():{}
+ASTSetList SetList():{ASTUpdateValue updateValue;}
 {
-    <INSERT><INTO>Relation()<LEFTPARENTHESES>InList()<RIGHTPARENTHESES><VALUES><LEFTPARENTHESES>VList()<RIGHTPARENTHESES>
+    updateValue = UpdateValue(){jjtThis.getUpdateValues().add(updateValue);} [(<COMMA> updateValue = UpdateValue(){jjtThis.getUpdateValues().add(updateValue);})+]{return jjtThis;}
 }
-void InList():{}
+ASTUpdateValue UpdateValue():{ASTColumnName columnName;ASTValue value;}
 {
-    Attribute()[(<COMMA>Attribute())+]
+    columnName = ColumnName(){jjtThis.setColumnName(columnName);} <EQUAL> value = Value(){jjtThis.setValue(value); return jjtThis;}
 }
-void VList():{}
+/*-------- INSERT 语句 -----------*/
+void InsertStmt():{ASTTableName tableName; ASTColumnList columnList; ASTValueList valueList;}
 {
-    <LEFTQUOTATION>IDENTIFIER()<LEFTQUOTATION>[(<COMMA><LEFTQUOTATION>IDENTIFIER()<LEFTQUOTATION>)+]
+    <INSERT><INTO>tableName = TableName(){jjtThis.setTableName(tableName);}[<LEFTPARENTHESES>columnList = ColumnList(){jjtThis.setColumnList(columnList);}<RIGHTPARENTHESES>]
+    <VALUES><LEFTPARENTHESES>valueList = ValueList(){jjtThis.setValueList(valueList);}<RIGHTPARENTHESES>
+}
+ASTColumnList ColumnList():{ASTColumnName columnName;}
+{
+    columnName = ColumnName(){jjtThis.getColumnNames().add(columnName);}[(<COMMA> columnName = ColumnName(){jjtThis.getColumnNames().add(columnName);})+]
+    {return jjtThis;}
+}
+ASTValueList ValueList():{ASTValue value;}
+{
+    value = Value(){jjtThis.getValues().add(value);}[(<COMMA> value = Value(){jjtThis.getValues().add(value);})+]
+    {return jjtThis;}
 }
 /*-------------------*/
 void Attribute():{}
