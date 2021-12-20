@@ -2,22 +2,35 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
-public
-class ASTOrExpression extends SimpleNode {
-  public ASTOrExpression(int id) {
-    super(id);
-  }
+import com.yjq.parser.interfaces.Expression;
+import lombok.Data;
 
-  public ASTOrExpression(SQLParser p, int id) {
-    super(p, id);
-  }
+@Data
+public class ASTOrExpression extends SimpleNode implements Expression {
+    private ASTAndExpression left = null;
+    private Boolean or = false;
+    private ASTAndExpression right = null;
+    public ASTOrExpression(int id) {
+        super(id);
+    }
+
+    public ASTOrExpression(SQLParser p, int id) {
+        super(p, id);
+    }
 
 
-  /** Accept the visitor. **/
-  public Object jjtAccept(SQLParserVisitor visitor, Object data) {
+    /**
+     * Accept the visitor.
+     **/
+    public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-    return
-    visitor.visit(this, data);
-  }
+        return
+                visitor.visit(this, data);
+    }
+
+    @Override
+    public boolean result() {
+        return false;
+    }
 }
 /* JavaCC - OriginalChecksum=d0c8aa81caea467f1cfd796e324f4d1d (do not edit this line) */

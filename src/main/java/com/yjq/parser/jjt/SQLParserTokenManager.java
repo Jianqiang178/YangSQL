@@ -3,6 +3,7 @@
 package com.yjq.parser.jjt;
 import com.sun.org.apache.bcel.internal.generic.ARETURN;
 import com.yjq.parser.jjt.*;
+import com.yjq.parser.operator.*;
 
 /** Token Manager. */
 @SuppressWarnings ("unused")

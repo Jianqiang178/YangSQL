@@ -9,6 +9,7 @@ public class ASTColumnName extends SimpleNode {
     private String name;
     private Boolean haveTable;
     private String tableName;
+    private ASTValue value;
 
     public ASTColumnName(int id) {
         super(id);

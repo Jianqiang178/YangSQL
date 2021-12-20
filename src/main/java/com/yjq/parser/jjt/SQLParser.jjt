@@ -6,7 +6,9 @@ options {
 PARSER_BEGIN(SQLParser)
 package com.yjq.parser.jjt;
 
-import com.sun.org.apache.bcel.internal.generic.ARETURN;import com.yjq.parser.jjt.*;
+import com.sun.org.apache.bcel.internal.generic.ARETURN;
+import com.yjq.parser.jjt.*;
+import com.yjq.parser.operator.*;
 public class SQLParser{
     public static void main(String args[]) {
         System.out.println("Reading from standard input...");
@@ -14,6 +16,8 @@ public class SQLParser{
         try {
           SimpleNode n = p.Start();
           n.dump("");
+//          ASTComparisonExpression comparisonExpression = p.ComparisonExpression();
+//          System.out.println(comparisonExpression.compare());
           System.out.println("Thank you.");
         } catch (Exception e) {
           System.out.println("Oops.");
@@ -118,13 +122,14 @@ void Function():{}
 {
     <IDENTIFIER><LEFTPARENTHESES>Value()[(<COMMA> Value())+]<RIGHTPARENTHESES>
 }
-void StringLiteral():{}
+ASTStringLiteral StringLiteral():{Token t;}
 {
-    <LQUOTATION><IDENTIFIER><LQUOTATION>
+    <LQUOTATION>t = <IDENTIFIER>{jjtThis.setValue(t.image);}<LQUOTATION>{return jjtThis;}
 }
-void NumericLiteral():{}
+ASTNumericLiteral NumericLiteral():{Token t;}
 {
-    <INTEGER_LITERAL> | <FLOAT_LITERAL>
+    t = <INTEGER_LITERAL> {jjtThis.setIntegerValue(Integer.parseInt(t.image));return jjtThis;}
+    | t = <FLOAT_LITERAL>{jjtThis.setDoubleValue(Double.parseDouble(t.image));return jjtThis;}
 }
 void LiteralValue():{}
 {
@@ -147,9 +152,11 @@ ASTSelectStmt SelectStmt():
 {
     ASTResult astResult;
     ASTFromList astFromList;
+    ASTExpression expression;
 }
 {
-    <SELECT>[<DISTINCT>]astResult = Result(){jjtThis.setAstResult(astResult);}<FROM>astFromList = FromList(){jjtThis.setAstFromList(astFromList);}[<WHERE> Expression()| LOOKAHEAD(2)Exist()]
+    <SELECT>[<DISTINCT>]astResult = Result(){jjtThis.setAstResult(astResult);}<FROM>astFromList = FromList(){jjtThis.setAstFromList(astFromList);}
+    [<WHERE> expression = Expression(){jjtThis.setExpression(expression);}| LOOKAHEAD(2)Exist()]
     [GroupBy()] /* Group by having子句 */
     [OrderBy() ] /* Order子句 */
     [Limit()] /* Limit子句 */
@@ -178,22 +185,23 @@ void ComparisonOperator():{}
 /**
 * 逻辑-and表达式
 */
-void AndExpression():{}
+ASTAndExpression AndExpression():{ASTCondition condition;}
 {
-    [<NOT>] Condition()
-    [<AND>[<NOT>] Condition()]
+    [<NOT>{jjtThis.setLeftNot(true);}] condition = Condition(){jjtThis.setLeft(condition);}
+    [<AND>{jjtThis.setAnd(true);}[<NOT>{jjtThis.setRightNot(true);}] condition = Condition(){jjtThis.setRight(condition);}]{return jjtThis;}
 }
 /**
 * 逻辑-or表达式
 */
-void OrExpression():{}
+ASTOrExpression OrExpression():{ASTAndExpression astAndExpression;}
 {
-    AndExpression() [<OR> AndExpression()]
+    astAndExpression = AndExpression(){jjtThis.setLeft(astAndExpression);}
+    [<OR>{jjtThis.setOr(true);} astAndExpression = AndExpression(){jjtThis.setRight(astAndExpression);}]{return jjtThis;}
 }
 /**
 * 空值表达式
 */
-void NullExpression():{}
+ASTNullExpression NullExpression():{}
 {
     ColumnName()
     <ISNULL>
@@ -202,14 +210,14 @@ void NullExpression():{}
 /**
 * like匹配表达式
 */
-void LikeExpression():{}{
+ASTLikeExpression LikeExpression():{}{
     ColumnName()
     [<NOT>] <LIKE> StringLiteral()
 }
 /**
 * in判断表达式
 */
-void InExpression():{}
+ASTInExpression InExpression():{}
 {
     ColumnName()
     [<NOT>] <IN> <LEFTPARENTHESES> Value() [(<COMMA> Value())+]<RIGHTPARENTHESES>
@@ -217,7 +225,7 @@ void InExpression():{}
 /**
 * between表达式
 */
-void BetweenExpression():{}
+ASTBetweenExpression BetweenExpression():{}
 {
     ColumnName()
     [<NOT>] <BETWEEN> Value() <AND> Value()
@@ -225,37 +233,55 @@ void BetweenExpression():{}
 /**
 * 比较表达式
 */
-void ComparisonExpression():{}
+ASTComparisonExpression ComparisonExpression():
 {
-    ColumnName()
-    (<EQUAL>
-    | <LESSTHAN>
-    | <LESSTHANOREQUALTO>
-    | <GREATERTHAN>
-    | <GREATERTHANOREQUALTO>
-    | <NOTEQUAL>
-    | <NOTGREATER>
-    | <NOTLESS> )
-    Value()
+    ASTColumnName columnName;
+    ASTValue value;
 }
-void Value():{}
 {
-    NumericLiteral() | LOOKAHEAD(2)StringLiteral() | ColumnName()
+    columnName = ColumnName(){jjtThis.setColumnName(columnName);}
+    (<EQUAL>{jjtThis.setOperator(new Equal());}
+    | <LESSTHAN>{jjtThis.setOperator(new LessThan());}
+    | <LESSTHANOREQUALTO>{jjtThis.setOperator(new LessThanOrEqualTo());}
+    | <GREATERTHAN>{jjtThis.setOperator(new GreaterThan());}
+    | <GREATERTHANOREQUALTO>{jjtThis.setOperator(new GreaterThanOrEqualTo());}
+    | <NOTEQUAL>{jjtThis.setOperator(new NotEqual());}
+    | <NOTGREATER>{jjtThis.setOperator(new LessThanOrEqualTo());}
+    | <NOTLESS>){jjtThis.setOperator(new GreaterThanOrEqualTo());}
+    value = Value(){jjtThis.setValue(value);return jjtThis;}
 }
-void Expression():{}
+ASTValue Value():
 {
-    OrExpression()
+    ASTNumericLiteral numericLiteral;
+    ASTStringLiteral stringLiteral;
+    ASTColumnName columnName;
+}
+{
+    numericLiteral = NumericLiteral() {jjtThis.setNumericLiteral(numericLiteral);return jjtThis;}
+    | LOOKAHEAD(2)stringLiteral = StringLiteral() {jjtThis.setStringLiteral(stringLiteral);return jjtThis;}
+    | columnName = ColumnName(){jjtThis.setColumnName(columnName);return jjtThis;}
+}
+ASTExpression Expression():{ASTOrExpression expression;}
+{
+    expression = OrExpression(){jjtThis.setOrExpression(expression);return jjtThis;}
 }
 /**
 * where条件
 */
-void Condition():{}
+ASTCondition Condition():
 {
-    LOOKAHEAD(2)ComparisonExpression()
-    | LOOKAHEAD(2)InExpression()
-    | LOOKAHEAD(2)BetweenExpression()
-    | LOOKAHEAD(2)LikeExpression()
-    | LOOKAHEAD(2)NullExpression()
+    ASTComparisonExpression comparisonExpression;
+    ASTInExpression inExpression;
+    ASTBetweenExpression betweenExpression;
+    ASTLikeExpression likeExpression;
+    ASTNullExpression nullExpression;
+}
+{
+    LOOKAHEAD(2)comparisonExpression = ComparisonExpression(){jjtThis.setExpression(comparisonExpression);return jjtThis;}
+    | LOOKAHEAD(2)inExpression = InExpression(){jjtThis.setExpression(inExpression);return jjtThis;}
+    | LOOKAHEAD(2)betweenExpression = BetweenExpression(){jjtThis.setExpression(betweenExpression);return jjtThis;}
+    | LOOKAHEAD(2)likeExpression = LikeExpression(){jjtThis.setExpression(likeExpression);return jjtThis;}
+    | LOOKAHEAD(2)nullExpression = NullExpression(){jjtThis.setExpression(nullExpression);return jjtThis;}
 }
 /**
 * ORDER BY子句

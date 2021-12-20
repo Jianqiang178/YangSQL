@@ -2,22 +2,41 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
-public
-class ASTComparisonExpression extends SimpleNode {
-  public ASTComparisonExpression(int id) {
-    super(id);
-  }
+import com.yjq.parser.interfaces.Expression;
+import com.yjq.parser.operator.Operator;
+import lombok.Data;
 
-  public ASTComparisonExpression(SQLParser p, int id) {
-    super(p, id);
-  }
+@Data
+public class ASTComparisonExpression extends SimpleNode implements Expression {
+    private ASTColumnName columnName;
+    private Operator operator;
+    private ASTValue value;
+
+    public ASTComparisonExpression(int id) {
+        super(id);
+    }
+
+    public ASTComparisonExpression(SQLParser p, int id) {
+        super(p, id);
+    }
 
 
-  /** Accept the visitor. **/
-  public Object jjtAccept(SQLParserVisitor visitor, Object data) {
+    /**
+     * Accept the visitor.
+     **/
+    public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-    return
-    visitor.visit(this, data);
-  }
+        return visitor.visit(this, data);
+    }
+
+    @Override
+    public boolean result() {
+        ASTValue left = columnName.getValue();
+        ASTValue right = value;
+        if (right.getType() == 3) {
+            right = right.getColumnName().getValue();
+        }
+        return operator.compare(left, right);
+    }
 }
 /* JavaCC - OriginalChecksum=2b5d85fda789a45dda1dddb719d5c629 (do not edit this line) */

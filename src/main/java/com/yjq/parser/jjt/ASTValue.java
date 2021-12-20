@@ -2,22 +2,40 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
-public
-class ASTValue extends SimpleNode {
-  public ASTValue(int id) {
-    super(id);
-  }
+import lombok.Data;
 
-  public ASTValue(SQLParser p, int id) {
-    super(p, id);
-  }
+@Data
+public class ASTValue extends SimpleNode {
+    private ASTNumericLiteral numericLiteral = null;
+    private ASTStringLiteral stringLiteral = null;
+    private ASTColumnName columnName = null;
+
+    public ASTValue(int id) {
+        super(id);
+    }
+
+    public ASTValue(SQLParser p, int id) {
+        super(p, id);
+    }
 
 
-  /** Accept the visitor. **/
-  public Object jjtAccept(SQLParserVisitor visitor, Object data) {
+    /**
+     * Accept the visitor.
+     **/
+    public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-    return
-    visitor.visit(this, data);
-  }
+        return visitor.visit(this, data);
+    }
+
+    /**
+     * 获取value类型
+     * @return
+     */
+    public int getType() {
+        if (numericLiteral != null) return 1;
+        else if (stringLiteral != null) return 2;
+        else if (columnName != null) return 3;
+        return -1;
+    }
 }
 /* JavaCC - OriginalChecksum=ad521dae29a735fffc871a92d21c339d (do not edit this line) */

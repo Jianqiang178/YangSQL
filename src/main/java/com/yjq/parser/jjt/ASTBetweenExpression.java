@@ -2,8 +2,11 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
-public
-class ASTBetweenExpression extends SimpleNode {
+import com.yjq.parser.interfaces.Expression;
+import lombok.Data;
+
+@Data
+public class ASTBetweenExpression extends SimpleNode implements Expression {
   public ASTBetweenExpression(int id) {
     super(id);
   }
@@ -18,6 +21,11 @@ class ASTBetweenExpression extends SimpleNode {
 
     return
     visitor.visit(this, data);
+  }
+
+  @Override
+  public boolean result() {
+    return false;
   }
 }
 /* JavaCC - OriginalChecksum=634697302918475bf324d4783f3d5f82 (do not edit this line) */

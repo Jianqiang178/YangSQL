@@ -8,6 +8,7 @@ import lombok.Data;
 public class ASTSelectStmt extends SimpleNode {
     private ASTResult astResult;
     private ASTFromList astFromList;
+    private ASTExpression expression;
     public ASTSelectStmt(int id) {
         super(id);
     }

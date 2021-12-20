@@ -2,8 +2,10 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
+import com.yjq.parser.interfaces.Expression;
+
 public
-class ASTInExpression extends SimpleNode {
+class ASTInExpression extends SimpleNode implements Expression {
   public ASTInExpression(int id) {
     super(id);
   }
@@ -18,6 +20,11 @@ class ASTInExpression extends SimpleNode {
 
     return
     visitor.visit(this, data);
+  }
+
+  @Override
+  public boolean result() {
+    return false;
   }
 }
 /* JavaCC - OriginalChecksum=8bdc2a6607d34e65b19cedc96a2931b8 (do not edit this line) */
