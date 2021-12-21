@@ -1577,7 +1577,7 @@ void InsertStmt():{/*@bgen(jjtree) InsertStmt */
     try {
 /*@egen*/
     <INSERT><INTO>tableName = TableName(){jjtn000.setTableName(tableName);}[<LEFTPARENTHESES>columnList = ColumnList(){jjtn000.setColumnList(columnList);}<RIGHTPARENTHESES>]
-    <VALUES><LEFTPARENTHESES>valueList = ValueList(){jjtn000.setValueList(valueList);}<RIGHTPARENTHESES>/*@bgen(jjtree)*/
+    <VALUES><LEFTPARENTHESES>valueList = DataList(){jjtn000.setValueList(valueList);}<RIGHTPARENTHESES>/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -1635,21 +1635,15 @@ ASTColumnList ColumnList():{/*@bgen(jjtree) ColumnList */
     }
 /*@egen*/
 }
-ASTValueList ValueList():{/*@bgen(jjtree) ValueList */
-                          ASTValueList jjtn000 = new ASTValueList(JJTVALUELIST);
-                          boolean jjtc000 = true;
-                          jjtree.openNodeScope(jjtn000);
-/*@egen*/ASTValue value;}
-{/*@bgen(jjtree) ValueList */
+void DataList():{/*@bgen(jjtree) DataList */
+                 ASTDataList jjtn000 = new ASTDataList(JJTDATALIST);
+                 boolean jjtc000 = true;
+                 jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTData data;}
+{/*@bgen(jjtree) DataList */
     try {
 /*@egen*/
-    value = Value(){jjtn000.getValues().add(value);}[(<COMMA> value = Value(){jjtn000.getValues().add(value);})+]/*@bgen(jjtree)*/
-    {
-      jjtree.closeNodeScope(jjtn000, true);
-      jjtc000 = false;
-    }
-/*@egen*/
-    {return jjtn000;}/*@bgen(jjtree)*/
+    data = Data() [(<COMMA> data = Data())+]/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);

@@ -46,7 +46,7 @@ public interface SQLParserTreeConstants
   public int JJTUPDATEVALUE = 40;
   public int JJTINSERTSTMT = 41;
   public int JJTCOLUMNLIST = 42;
-  public int JJTVALUELIST = 43;
+  public int JJTDATALIST = 43;
   public int JJTATTRIBUTE = 44;
   public int JJTRELATION = 45;
   public int JJTPATTERN = 46;
@@ -97,11 +97,11 @@ public interface SQLParserTreeConstants
     "UpdateValue",
     "InsertStmt",
     "ColumnList",
-    "ValueList",
+    "DataList",
     "Attribute",
     "Relation",
     "Pattern",
     "IDENTIFIER",
   };
 }
-/* JavaCC - OriginalChecksum=526c15df3540d7035f534ffe8e5b7af8 (do not edit this line) */
+/* JavaCC - OriginalChecksum=90e6970256da725d44b07dde158a1e6a (do not edit this line) */

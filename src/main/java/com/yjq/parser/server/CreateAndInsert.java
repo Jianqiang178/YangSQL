@@ -2,12 +2,11 @@ package com.yjq.parser.server;
 
 import com.yjq.parser.data.Head;
 import com.yjq.parser.data.Table;
-import com.yjq.parser.jjt.ASTCreateStmt;
-import com.yjq.parser.jjt.ASTInsertStmt;
-import com.yjq.parser.jjt.ASTValue;
+import com.yjq.parser.jjt.*;
 import com.yjq.parser.utils.YmlUtils;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -60,8 +59,8 @@ public class CreateAndInsert {
      * @throws IOException
      */
     public static void createTable(String db, Table table) throws IOException {
-        String meta_path = db_path + File.separator + db + File.separator + table.getName() + File.separator + table.getName() + ".meta";
-        String data_path = db_path + File.separator + db + File.separator + table.getName() + File.separator + table.getName() + ".data";
+        String meta_path = getMetaPath(db, table.getName());
+        String data_path = getDataPath(db, table.getName());
         createFile(meta_path);
         writeObject(meta_path, table);
         createFile(data_path);
@@ -72,12 +71,31 @@ public class CreateAndInsert {
      *
      * @param insertStmt
      */
-    public void dealInsertData(ASTInsertStmt insertStmt) {
-
+    public void dealInsertData(String db, ASTInsertStmt insertStmt) {
+        Table table = readTableMeta(db, insertStmt.getTableName().getName());
+        List<String> columns = insertStmt.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
+        List<String> values = insertStmt.getDataList().getDataList().stream().map(ASTData::getValue).collect(Collectors.toList());
+        assert values.size() == columns.size();
+        Map<String, String> insertData = new HashMap<>();
+        for (int i = 0; i < columns.size(); i++) {
+            assert table.getHeads().get(columns.get(i)) != null;
+            assert table.getHeads().get(columns.get(i)).getType() == insertStmt.getDataList().getDataList().get(i).getType();
+            insertData.put(columns.get(i), values.get(i));
+        }
+        StringBuilder data = new StringBuilder();
+        for (String s : table.getHeads().keySet()) {
+            if (insertData.get(s) != null) {
+                data.append(insertData.get(s));
+            }
+            data.append("\t");
+        }
+        String path = getDataPath(db, table.getName());
+        appendContent(path, data.toString());
     }
 
     /**
      * 处理见表语句
+     *
      * @param db
      * @param createStmt
      * @throws IOException
@@ -89,6 +107,19 @@ public class CreateAndInsert {
         Map<String, Head> headMap = heads.stream().collect(Collectors.toMap(Head::getName, t -> t));
         table.setHeads(headMap);
         createTable(db, table);
+    }
+
+    /**
+     * 读取表信息
+     *
+     * @param db
+     * @param tableName
+     * @return
+     */
+    public Table readTableMeta(String db, String tableName) {
+        String path = getMetaPath(db, tableName);
+        Table table = (Table) readObject(path);
+        return table;
     }
 
     /**
@@ -202,5 +233,17 @@ public class CreateAndInsert {
             }
         }
         return result;
+    }
+
+    public static String getMetaPath(String db, String tableName) {
+        return db_path + File.separator + db + File.separator + tableName + File.separator + tableName + ".meta";
+    }
+
+    public static String getDataPath(String db, String tableName) {
+        return db_path + File.separator + db + File.separator + tableName + File.separator + tableName + ".data";
+    }
+
+    public static String getTablePath(String db, String tableName) {
+        return db_path + File.separator + db + File.separator + tableName;
     }
 }

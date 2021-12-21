@@ -434,19 +434,19 @@ ASTUpdateValue UpdateValue():{ASTColumnName columnName;ASTValue value;}
     columnName = ColumnName(){jjtThis.setColumnName(columnName);} <EQUAL> value = Value(){jjtThis.setValue(value); return jjtThis;}
 }
 /*-------- INSERT 语句 -----------*/
-void InsertStmt():{ASTTableName tableName; ASTColumnList columnList; ASTValueList valueList;}
+ASTInsertStmt InsertStmt():{ASTTableName tableName; ASTColumnList columnList; ASTDataList dataList;}
 {
     <INSERT><INTO>tableName = TableName(){jjtThis.setTableName(tableName);}[<LEFTPARENTHESES>columnList = ColumnList(){jjtThis.setColumnList(columnList);}<RIGHTPARENTHESES>]
-    <VALUES><LEFTPARENTHESES>valueList = ValueList(){jjtThis.setValueList(valueList);}<RIGHTPARENTHESES>
+    <VALUES><LEFTPARENTHESES>dataList = DataList(){jjtThis.setDataList(dataList);}<RIGHTPARENTHESES>{return jjtThis;}
 }
 ASTColumnList ColumnList():{ASTColumnName columnName;}
 {
     columnName = ColumnName(){jjtThis.getColumnNames().add(columnName);}[(<COMMA> columnName = ColumnName(){jjtThis.getColumnNames().add(columnName);})+]
     {return jjtThis;}
 }
-ASTValueList ValueList():{ASTValue value;}
+ASTDataList DataList():{ASTData data;}
 {
-    value = Value(){jjtThis.getValues().add(value);}[(<COMMA> value = Value(){jjtThis.getValues().add(value);})+]
+    data = Data(){jjtThis.getDataList().add(data);} [(<COMMA> data = Data(){jjtThis.getDataList().add(data);})+]
     {return jjtThis;}
 }
 /*-------------------*/

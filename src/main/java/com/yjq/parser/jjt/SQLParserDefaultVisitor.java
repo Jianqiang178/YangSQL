@@ -138,7 +138,7 @@ public class SQLParserDefaultVisitor implements SQLParserVisitor{
   public Object visit(ASTColumnList node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTValueList node, Object data){
+  public Object visit(ASTDataList node, Object data){
     return defaultVisit(node, data);
   }
   public Object visit(ASTAttribute node, Object data){
@@ -154,4 +154,4 @@ public class SQLParserDefaultVisitor implements SQLParserVisitor{
     return defaultVisit(node, data);
   }
 }
-/* JavaCC - OriginalChecksum=005e9b023c999cbb5635a8d824a96852 (do not edit this line) */
+/* JavaCC - OriginalChecksum=ec488db30ff6dea15fe31e560dd152a4 (do not edit this line) */

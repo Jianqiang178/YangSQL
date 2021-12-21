@@ -2094,7 +2094,7 @@ jjtn000.setColumnList(columnList);
       }
       jj_consume_token(VALUES);
       jj_consume_token(LEFTPARENTHESES);
-      valueList = ValueList();
+      valueList = DataList();
 jjtn000.setValueList(valueList);
       jj_consume_token(RIGHTPARENTHESES);
     } catch (Throwable jjte000) {
@@ -2173,20 +2173,18 @@ if (jjtc000) {
     throw new Error("Missing return statement in function");
 }
 
-  final public ASTValueList ValueList() throws ParseException {/*@bgen(jjtree) ValueList */
-                          ASTValueList jjtn000 = new ASTValueList(JJTVALUELIST);
-                          boolean jjtc000 = true;
-                          jjtree.openNodeScope(jjtn000);ASTValue value;
+  final public void DataList() throws ParseException {/*@bgen(jjtree) DataList */
+                 ASTDataList jjtn000 = new ASTDataList(JJTDATALIST);
+                 boolean jjtc000 = true;
+                 jjtree.openNodeScope(jjtn000);ASTData data;
     try {
-      value = Value();
-jjtn000.getValues().add(value);
+      data = Data();
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case COMMA:{
         label_10:
         while (true) {
           jj_consume_token(COMMA);
-          value = Value();
-jjtn000.getValues().add(value);
+          data = Data();
           switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
           case COMMA:{
             ;
@@ -2203,9 +2201,6 @@ jjtn000.getValues().add(value);
         jj_la1[60] = jj_gen;
         ;
       }
-jjtree.closeNodeScope(jjtn000, true);
-      jjtc000 = false;
-{if ("" != null) return jjtn000;}
     } catch (Throwable jjte000) {
 if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);
@@ -2225,7 +2220,6 @@ if (jjtc000) {
         jjtree.closeNodeScope(jjtn000, true);
       }
     }
-    throw new Error("Missing return statement in function");
 }
 
 /*-------------------*/

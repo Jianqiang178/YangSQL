@@ -47,10 +47,10 @@ public interface SQLParserVisitor
   public Object visit(ASTUpdateValue node, Object data);
   public Object visit(ASTInsertStmt node, Object data);
   public Object visit(ASTColumnList node, Object data);
-  public Object visit(ASTValueList node, Object data);
+  public Object visit(ASTDataList node, Object data);
   public Object visit(ASTAttribute node, Object data);
   public Object visit(ASTRelation node, Object data);
   public Object visit(ASTPattern node, Object data);
   public Object visit(ASTIDENTIFIER node, Object data);
 }
-/* JavaCC - OriginalChecksum=ff3a14396b68b514d99410cc822670ca (do not edit this line) */
+/* JavaCC - OriginalChecksum=ddc5ec0ae7a7d51f7e49840a546cdb83 (do not edit this line) */
