@@ -22,34 +22,35 @@ public interface SQLParserTreeConstants
   public int JJTINEXPRESSION = 16;
   public int JJTBETWEENEXPRESSION = 17;
   public int JJTCOMPARISONEXPRESSION = 18;
-  public int JJTVALUE = 19;
-  public int JJTEXPRESSION = 20;
-  public int JJTCONDITION = 21;
-  public int JJTORDERBY = 22;
-  public int JJTGROUPBY = 23;
-  public int JJTLIMIT = 24;
-  public int JJTEXIST = 25;
-  public int JJTOPERATOR = 26;
-  public int JJTRESULT = 27;
-  public int JJTRESULTCOLUMN = 28;
-  public int JJTFROMLIST = 29;
-  public int JJTFROMTABLE = 30;
-  public int JJTTUPLE = 31;
-  public int JJTCREATESTMT = 32;
-  public int JJTCOLLIST = 33;
-  public int JJTFIELD = 34;
-  public int JJTDROPT = 35;
-  public int JJTDELETESTMT = 36;
-  public int JJTUPDATESTMT = 37;
-  public int JJTSETLIST = 38;
-  public int JJTUPDATEVALUE = 39;
-  public int JJTINSERTSTMT = 40;
-  public int JJTCOLUMNLIST = 41;
-  public int JJTVALUELIST = 42;
-  public int JJTATTRIBUTE = 43;
-  public int JJTRELATION = 44;
-  public int JJTPATTERN = 45;
-  public int JJTIDENTIFIER = 46;
+  public int JJTDATA = 19;
+  public int JJTVALUE = 20;
+  public int JJTEXPRESSION = 21;
+  public int JJTCONDITION = 22;
+  public int JJTORDERBY = 23;
+  public int JJTGROUPBY = 24;
+  public int JJTLIMIT = 25;
+  public int JJTEXIST = 26;
+  public int JJTOPERATOR = 27;
+  public int JJTRESULT = 28;
+  public int JJTRESULTCOLUMN = 29;
+  public int JJTFROMLIST = 30;
+  public int JJTFROMTABLE = 31;
+  public int JJTTUPLE = 32;
+  public int JJTCREATESTMT = 33;
+  public int JJTCOLLIST = 34;
+  public int JJTFIELD = 35;
+  public int JJTDROPT = 36;
+  public int JJTDELETESTMT = 37;
+  public int JJTUPDATESTMT = 38;
+  public int JJTSETLIST = 39;
+  public int JJTUPDATEVALUE = 40;
+  public int JJTINSERTSTMT = 41;
+  public int JJTCOLUMNLIST = 42;
+  public int JJTVALUELIST = 43;
+  public int JJTATTRIBUTE = 44;
+  public int JJTRELATION = 45;
+  public int JJTPATTERN = 46;
+  public int JJTIDENTIFIER = 47;
 
 
   public String[] jjtNodeName = {
@@ -72,6 +73,7 @@ public interface SQLParserTreeConstants
     "InExpression",
     "BetweenExpression",
     "ComparisonExpression",
+    "Data",
     "Value",
     "Expression",
     "Condition",
@@ -102,4 +104,4 @@ public interface SQLParserTreeConstants
     "IDENTIFIER",
   };
 }
-/* JavaCC - OriginalChecksum=89ce0f0009248e24d3e2b8924a76822c (do not edit this line) */
+/* JavaCC - OriginalChecksum=526c15df3540d7035f534ffe8e5b7af8 (do not edit this line) */

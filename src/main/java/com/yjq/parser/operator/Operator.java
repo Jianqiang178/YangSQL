@@ -1,7 +1,7 @@
 package com.yjq.parser.operator;
 
-import com.yjq.parser.jjt.ASTValue;
+import com.yjq.parser.jjt.ASTData;
 
 public interface Operator {
-    boolean compare(ASTValue left, ASTValue right);
+    boolean compare(ASTData left, ASTData right);
 }

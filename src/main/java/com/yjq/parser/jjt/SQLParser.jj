@@ -718,31 +718,65 @@ ASTComparisonExpression ComparisonExpression():
     }
 /*@egen*/
 }
+ASTData Data():{/*@bgen(jjtree) Data */
+                ASTData jjtn000 = new ASTData(JJTDATA);
+                boolean jjtc000 = true;
+                jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTNumericLiteral numericLiteral;ASTStringLiteral stringLiteral;}
+{/*@bgen(jjtree) Data */
+    try {
+/*@egen*/
+    numericLiteral = NumericLiteral()/*@bgen(jjtree)*/
+                                     {
+                                       jjtree.closeNodeScope(jjtn000, true);
+                                       jjtc000 = false;
+                                     }
+/*@egen*/{jjtn000.setNumericLiteral(numericLiteral); return jjtn000;}
+    | stringLiteral = StringLiteral()/*@bgen(jjtree)*/
+                                     {
+                                       jjtree.closeNodeScope(jjtn000, true);
+                                       jjtc000 = false;
+                                     }
+/*@egen*/{jjtn000.setStringLiteral(stringLiteral); return jjtn000;}/*@bgen(jjtree)*/
+    } catch (Throwable jjte000) {
+      if (jjtc000) {
+        jjtree.clearNodeScope(jjtn000);
+        jjtc000 = false;
+      } else {
+        jjtree.popNode();
+      }
+      if (jjte000 instanceof RuntimeException) {
+        throw (RuntimeException)jjte000;
+      }
+      if (jjte000 instanceof ParseException) {
+        throw (ParseException)jjte000;
+      }
+      throw (Error)jjte000;
+    } finally {
+      if (jjtc000) {
+        jjtree.closeNodeScope(jjtn000, true);
+      }
+    }
+/*@egen*/
+}
 ASTValue Value():
 {/*@bgen(jjtree) Value */
     ASTValue jjtn000 = new ASTValue(JJTVALUE);
     boolean jjtc000 = true;
     jjtree.openNodeScope(jjtn000);
 /*@egen*/
-    ASTNumericLiteral numericLiteral;
-    ASTStringLiteral stringLiteral;
+    ASTData data;
     ASTColumnName columnName;
 }
 {/*@bgen(jjtree) Value */
     try {
 /*@egen*/
-    numericLiteral = NumericLiteral()/*@bgen(jjtree)*/
-                                      {
-                                        jjtree.closeNodeScope(jjtn000, true);
-                                        jjtc000 = false;
-                                      }
-/*@egen*/ {jjtn000.setNumericLiteral(numericLiteral);return jjtn000;}
-    | LOOKAHEAD(2)stringLiteral = StringLiteral()/*@bgen(jjtree)*/
-                                                  {
-                                                    jjtree.closeNodeScope(jjtn000, true);
-                                                    jjtc000 = false;
-                                                  }
-/*@egen*/ {jjtn000.setStringLiteral(stringLiteral);return jjtn000;}
+    data = Data()/*@bgen(jjtree)*/
+                 {
+                   jjtree.closeNodeScope(jjtn000, true);
+                   jjtc000 = false;
+                 }
+/*@egen*/{jjtn000.setData(data);}
     | columnName = ColumnName()/*@bgen(jjtree)*/
                                {
                                  jjtree.closeNodeScope(jjtn000, true);

@@ -32,10 +32,15 @@ public class ASTNumericLiteral extends SimpleNode {
 
     /**
      * 获取至类型
+     *
      * @return
      */
     public int getType() {
         return integerValue == null ? 2 : 1;
+    }
+
+    public String getValue() {
+        return integerValue == null ? doubleValue.toString() : integerValue.toString();
     }
 }
 /* JavaCC - OriginalChecksum=901ceb065e4e64b93f19d15f69954478 (do not edit this line) */

@@ -13,7 +13,7 @@ public class ASTColumnName extends SimpleNode {
     private String name = null;
     private Boolean haveTable = null;
     private String tableName = null;
-    private ASTValue value = null;
+    private ASTData data = null;
 
     public ASTColumnName(int id) {
         super(id);
@@ -23,26 +23,10 @@ public class ASTColumnName extends SimpleNode {
         super(p, id);
     }
 
-    public ASTValue getValue() {
-        if (value == null) {
-            // FIXME 必须保证tableName可以替换，否则返回列名
-            value = new ASTValue();
-            ASTStringLiteral stringLiteral = new ASTStringLiteral();
-            stringLiteral.setValue(name);
-            value.setStringLiteral(stringLiteral);
-            return value;
-        } else if (value.getType() == 3) {
-            return value.getColumnName().getValue();
-        } else {
-            return value;
-        }
-    }
-
     /**
      * Accept the visitor.
      **/
     public Object jjtAccept(SQLParserVisitor visitor, Object data) {
-
         return visitor.visit(this, data);
     }
 
@@ -57,26 +41,28 @@ public class ASTColumnName extends SimpleNode {
             System.out.println("key = " + entry.getKey() + ", value = " + entry.getValue());
             if (entry.getKey().equals(name)) {
                 ASTValue value1 = new ASTValue();
+                ASTData data = new ASTData();
                 String type = entry.getValue().getDataType();
-                if (type.equalsIgnoreCase("integer")) {
+                if (type.equalsIgnoreCase("int")) {
                     ASTNumericLiteral numericLiteral = new ASTNumericLiteral();
                     numericLiteral.setIntegerValue(Integer.parseInt(entry.getValue().getValue()));
-                    value1.setNumericLiteral(numericLiteral);
+                    data.setNumericLiteral(numericLiteral);
                 } else if (type.equalsIgnoreCase("varchar")) {
                     ASTStringLiteral stringLiteral = new ASTStringLiteral();
                     stringLiteral.setValue(entry.getValue().getValue());
-                    value1.setStringLiteral(stringLiteral);
+                    data.setStringLiteral(stringLiteral);
                 } else if (type.equalsIgnoreCase("double")) {
                     ASTNumericLiteral numericLiteral = new ASTNumericLiteral();
                     numericLiteral.setDoubleValue(Double.parseDouble(entry.getValue().getValue()));
-                    value1.setNumericLiteral(numericLiteral);
+                    data.setNumericLiteral(numericLiteral);
                 }
+                setData(data);
                 find = true;
                 break;
             }
         }
         if(!find){
-            // TODO 若未找到数据，说明SQL语句错误
+            // TODO 若未找到数据，说明SQL语句列指定错误
             throw new YangSQLException("条件错误");
         }
     }

@@ -253,15 +253,18 @@ ASTComparisonExpression ComparisonExpression():
     | <NOTLESS>){jjtThis.setOperator(new GreaterThanOrEqualTo());}
     value = Value(){jjtThis.setValue(value);return jjtThis;}
 }
+ASTData Data():{ASTNumericLiteral numericLiteral;ASTStringLiteral stringLiteral;}
+{
+    numericLiteral = NumericLiteral(){jjtThis.setNumericLiteral(numericLiteral); return jjtThis;}
+    | stringLiteral = StringLiteral(){jjtThis.setStringLiteral(stringLiteral); return jjtThis;}
+}
 ASTValue Value():
 {
-    ASTNumericLiteral numericLiteral;
-    ASTStringLiteral stringLiteral;
+    ASTData data;
     ASTColumnName columnName;
 }
 {
-    numericLiteral = NumericLiteral() {jjtThis.setNumericLiteral(numericLiteral);return jjtThis;}
-    | LOOKAHEAD(2)stringLiteral = StringLiteral() {jjtThis.setStringLiteral(stringLiteral);return jjtThis;}
+    data = Data(){jjtThis.setData(data);}
     | columnName = ColumnName(){jjtThis.setColumnName(columnName);return jjtThis;}
 }
 ASTExpression Expression():{ASTOrExpression expression;}

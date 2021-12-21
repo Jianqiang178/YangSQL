@@ -66,6 +66,9 @@ public class SQLParserDefaultVisitor implements SQLParserVisitor{
   public Object visit(ASTComparisonExpression node, Object data){
     return defaultVisit(node, data);
   }
+  public Object visit(ASTData node, Object data){
+    return defaultVisit(node, data);
+  }
   public Object visit(ASTValue node, Object data){
     return defaultVisit(node, data);
   }
@@ -151,4 +154,4 @@ public class SQLParserDefaultVisitor implements SQLParserVisitor{
     return defaultVisit(node, data);
   }
 }
-/* JavaCC - OriginalChecksum=02059b575023b5c2e2a542922081174e (do not edit this line) */
+/* JavaCC - OriginalChecksum=005e9b023c999cbb5635a8d824a96852 (do not edit this line) */

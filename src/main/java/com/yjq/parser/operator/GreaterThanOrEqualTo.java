@@ -1,10 +1,11 @@
 package com.yjq.parser.operator;
 
+import com.yjq.parser.jjt.ASTData;
 import com.yjq.parser.jjt.ASTValue;
 
 public class GreaterThanOrEqualTo implements Operator{
     @Override
-    public boolean compare(ASTValue left, ASTValue right) {
+    public boolean compare(ASTData left, ASTData right) {
         if (left.getType() == right.getType()) {
             if (left.getType() == 1) {
                 if (left.getNumericLiteral().getType() == 1) {

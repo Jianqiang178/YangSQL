@@ -31,10 +31,12 @@ public class ASTComparisonExpression extends SimpleNode implements Expression {
 
     @Override
     public boolean result() {
-        ASTValue left = columnName.getValue();
-        ASTValue right = value;
-        if (right.getType() == 3) {
-            right = right.getColumnName().getValue();
+        ASTData left = columnName.getData();
+        ASTData right = null;
+        if (value.getType() == 4) {
+            right = value.getColumnName().getData();
+        }else {
+            right = value.getData();
         }
         return operator.compare(left, right);
     }

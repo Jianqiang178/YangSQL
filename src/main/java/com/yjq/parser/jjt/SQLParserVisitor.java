@@ -23,6 +23,7 @@ public interface SQLParserVisitor
   public Object visit(ASTInExpression node, Object data);
   public Object visit(ASTBetweenExpression node, Object data);
   public Object visit(ASTComparisonExpression node, Object data);
+  public Object visit(ASTData node, Object data);
   public Object visit(ASTValue node, Object data);
   public Object visit(ASTExpression node, Object data);
   public Object visit(ASTCondition node, Object data);
@@ -52,4 +53,4 @@ public interface SQLParserVisitor
   public Object visit(ASTPattern node, Object data);
   public Object visit(ASTIDENTIFIER node, Object data);
 }
-/* JavaCC - OriginalChecksum=b05a209d4a97b81ffd9630b395d94751 (do not edit this line) */
+/* JavaCC - OriginalChecksum=ff3a14396b68b514d99410cc822670ca (do not edit this line) */

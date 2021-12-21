@@ -10,8 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ASTValue extends SimpleNode {
-    private ASTNumericLiteral numericLiteral = null;
-    private ASTStringLiteral stringLiteral = null;
+    private ASTData data = null;
     private ASTColumnName columnName = null;
 
     public ASTValue(int id) {
@@ -33,13 +32,22 @@ public class ASTValue extends SimpleNode {
 
     /**
      * 获取value类型
+     *
      * @return
      */
     public int getType() {
-        if (numericLiteral != null) return 1;
-        else if (stringLiteral != null) return 2;
-        else if (columnName != null) return 3;
-        return -1;
+        if (data != null) return data.getType();
+        else if (columnName != null) return 4;
+        else return -1;
+    }
+
+    public String getValue() {
+        if (data != null) {
+            return data.getValue();
+        } else if (columnName != null) {
+            return columnName.getData().getValue();
+        }
+        return null;
     }
 }
 /* JavaCC - OriginalChecksum=ad521dae29a735fffc871a92d21c339d (do not edit this line) */
