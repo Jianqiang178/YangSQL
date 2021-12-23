@@ -39,18 +39,20 @@ public interface SQLParserTreeConstants
   public int JJTCREATESTMT = 33;
   public int JJTCOLLIST = 34;
   public int JJTFIELD = 35;
-  public int JJTDROPT = 36;
-  public int JJTDELETESTMT = 37;
-  public int JJTUPDATESTMT = 38;
-  public int JJTSETLIST = 39;
-  public int JJTUPDATEVALUE = 40;
-  public int JJTINSERTSTMT = 41;
-  public int JJTCOLUMNLIST = 42;
-  public int JJTDATALIST = 43;
-  public int JJTATTRIBUTE = 44;
-  public int JJTRELATION = 45;
-  public int JJTPATTERN = 46;
-  public int JJTIDENTIFIER = 47;
+  public int JJTCONSTRAINTS = 36;
+  public int JJTCONSTRAINT = 37;
+  public int JJTDROPT = 38;
+  public int JJTDELETESTMT = 39;
+  public int JJTUPDATESTMT = 40;
+  public int JJTSETLIST = 41;
+  public int JJTUPDATEVALUE = 42;
+  public int JJTINSERTSTMT = 43;
+  public int JJTCOLUMNLIST = 44;
+  public int JJTDATALIST = 45;
+  public int JJTATTRIBUTE = 46;
+  public int JJTRELATION = 47;
+  public int JJTPATTERN = 48;
+  public int JJTIDENTIFIER = 49;
 
 
   public String[] jjtNodeName = {
@@ -90,6 +92,8 @@ public interface SQLParserTreeConstants
     "CreateStmt",
     "ColList",
     "Field",
+    "Constraints",
+    "Constraint",
     "DropT",
     "DeleteStmt",
     "UpdateStmt",
@@ -104,4 +108,4 @@ public interface SQLParserTreeConstants
     "IDENTIFIER",
   };
 }
-/* JavaCC - OriginalChecksum=90e6970256da725d44b07dde158a1e6a (do not edit this line) */
+/* JavaCC - OriginalChecksum=0c2dcd339b2f804cf13dc60c370cfbfd (do not edit this line) */

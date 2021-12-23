@@ -2,10 +2,12 @@ package com.yjq.parser.server;
 
 import com.yjq.parser.data.Head;
 import com.yjq.parser.data.Table;
+import com.yjq.parser.exceptions.YangSQLException;
 import com.yjq.parser.jjt.*;
 import com.yjq.parser.utils.YmlUtils;
 
 import java.io.*;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +63,8 @@ public class CreateAndInsert {
     public static void createTable(String db, Table table) throws IOException {
         String meta_path = getMetaPath(db, table.getName());
         String data_path = getDataPath(db, table.getName());
+        String table_path = getTablePath(db, table.getName());
+        createDic(table_path);
         createFile(meta_path);
         writeObject(meta_path, table);
         createFile(data_path);
@@ -71,24 +75,50 @@ public class CreateAndInsert {
      *
      * @param insertStmt
      */
-    public void dealInsertData(String db, ASTInsertStmt insertStmt) {
+    public static void dealInsertData(String db, ASTInsertStmt insertStmt) throws YangSQLException {
         Table table = readTableMeta(db, insertStmt.getTableName().getName());
-        List<String> columns = insertStmt.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
+        List<String> columns = null;
+        if (insertStmt.getColumnList() == null) {
+            columns = table.getHeads().values().stream().sorted(Comparator.comparing(Head::getIndex)).map(Head::getName).collect(Collectors.toList());
+        } else {
+            columns = insertStmt.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
+        }
         List<String> values = insertStmt.getDataList().getDataList().stream().map(ASTData::getValue).collect(Collectors.toList());
         assert values.size() == columns.size();
         Map<String, String> insertData = new HashMap<>();
         for (int i = 0; i < columns.size(); i++) {
-            assert table.getHeads().get(columns.get(i)) != null;
-            assert table.getHeads().get(columns.get(i)).getType() == insertStmt.getDataList().getDataList().get(i).getType();
-            insertData.put(columns.get(i), values.get(i));
+            if (table.getHeads().get(columns.get(i)) == null) {
+                throw new YangSQLException("'" + columns.get(i) + "'" + "列不存在");
+            }
+            if (table.getHeads().get(columns.get(i)).getType() != insertStmt.getDataList().getDataList().get(i).getType()) {
+                throw new YangSQLException("'" + columns.get(i) + "'" + "列数据格式不匹配");
+            }
+            insertData.put(columns.get(i), insertStmt.getDataList().getDataList().get(i).getValue());
         }
         StringBuilder data = new StringBuilder();
-        for (String s : table.getHeads().keySet()) {
+        for (String s : columns) {
+            Head head = table.getHeads().get(s);
+            List<Integer> types = head.getCons();
             if (insertData.get(s) != null) {
+                if (types.contains(3)) {
+                    ASTConstraint constraint = head.getConsByType(3);
+                    if (Select.exitDataOneLine(db, constraint.getTableName().getName(), constraint.getColumnName().getName(), insertData.get(s))) {
+                        throw new YangSQLException(s + "列约束：外键" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")不存在" + insertData.get(s));
+                    }
+                } else if (types.contains(4)) {
+                    if (Select.exitDataOneLine(db, table.getName(), s, insertData.get(s))) {
+                        throw new YangSQLException(s + "列约束：值必须唯一，表中已存在" + insertData.get(s));
+                    }
+                }
                 data.append(insertData.get(s));
+            } else {
+                if (types.contains(1) || types.contains(2)) {
+                    throw new YangSQLException(s + "列约束：不能为空");
+                }
             }
             data.append("\t");
         }
+        data.append("\n");
         String path = getDataPath(db, table.getName());
         appendContent(path, data.toString());
     }
@@ -100,13 +130,33 @@ public class CreateAndInsert {
      * @param createStmt
      * @throws IOException
      */
-    public void dealCreateStmt(String db, ASTCreateStmt createStmt) throws IOException {
+    public static void dealCreateStmt(String db, ASTCreateStmt createStmt) throws YangSQLException {
         Table table = new Table();
-        table.setName(createStmt.getName());
-        List<Head> heads = createStmt.getColList().getFields().stream().map(f -> new Head(f.getName(), f.getDataType())).collect(Collectors.toList());
+        table.setName(createStmt.getTableName());
+        List<Head> heads = createStmt.getColList().getFields().stream().map(f -> new Head(f.getIndex(), f.getName(), f.getDataType(), f.getConstraints().getConstraintList())).collect(Collectors.toList());
+        for (Head head : heads) {
+            // 约束是否重复
+            List<Integer> integers = head.getCons();
+            if (integers.size() != integers.stream().distinct().count()) {
+                throw new YangSQLException(head.getName() + "列约束重复");
+            }
+            // 是否存在外键约束
+            if (head.getCons().contains(3)) {
+                ASTConstraint constraint = head.getConsByType(3);
+                Head head1 = getHead(db, constraint.getTableName().getName(), constraint.getColumnName().getName());
+                if (head1 == null || head1.getDataType().equals(head.getDataType())) {
+                    throw new YangSQLException(head.getName() + "列外键创建失败" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")不存在或数据类型不一样");
+                }
+            }
+        }
         Map<String, Head> headMap = heads.stream().collect(Collectors.toMap(Head::getName, t -> t));
         table.setHeads(headMap);
-        createTable(db, table);
+        try {
+            createTable(db, table);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new YangSQLException("文件读写异常");
+        }
     }
 
     /**
@@ -116,7 +166,7 @@ public class CreateAndInsert {
      * @param tableName
      * @return
      */
-    public Table readTableMeta(String db, String tableName) {
+    public static Table readTableMeta(String db, String tableName) {
         String path = getMetaPath(db, tableName);
         Table table = (Table) readObject(path);
         return table;
@@ -132,6 +182,22 @@ public class CreateAndInsert {
         if (!file.exists() || !file.isDirectory()) {
             file.mkdirs();
         }
+    }
+
+    /**
+     * 表是否存在
+     *
+     * @param db
+     * @param tableName
+     * @return
+     */
+    public static boolean existTable(String db, String tableName) {
+        return new File(getTablePath(db, tableName)).exists();
+    }
+
+    public static Head getHead(String db, String tableName, String column) {
+        Table table = readTableMeta(db, tableName);
+        return table.getHeads().get(column);
     }
 
     /**
@@ -210,7 +276,7 @@ public class CreateAndInsert {
      * @param path
      * @return
      */
-    public Object readObject(String path) {
+    public static Object readObject(String path) {
         File file = new File(path);
         Object result = null;
         if (file.exists() && !file.isDirectory()) {

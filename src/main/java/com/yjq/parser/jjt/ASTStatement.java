@@ -2,13 +2,20 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
+import com.yjq.parser.exceptions.YangSQLException;
 import com.yjq.parser.select.SelectStatement;
+import com.yjq.parser.server.CreateAndInsert;
+import com.yjq.parser.server.Select;
 import lombok.Data;
+
+import java.io.IOException;
 
 @Data
 public class ASTStatement extends SimpleNode {
     private Integer type;
     private ASTSelectStmt astSelectStmt;
+    private ASTInsertStmt insertStmt;
+    private ASTCreateStmt createStmt;
     public ASTStatement(int id) {
         super(id);
     }
@@ -16,7 +23,6 @@ public class ASTStatement extends SimpleNode {
     public ASTStatement(SQLParser p, int id) {
         super(p, id);
     }
-
 
     /**
      * Accept the visitor.
@@ -30,36 +36,17 @@ public class ASTStatement extends SimpleNode {
     /**
      * 处理statement语句，有且只有一个子节点，select/create/update/delete
      */
-    public void exec(){
+    public void exec() throws YangSQLException, IOException {
         if(children.length == 0){
             System.out.println("Statement节点无子节点");
             return;
         }
-        Node type = children[0];
-        String name =  SQLParserTreeConstants.jjtNodeName[type.getId()];
-        System.out.println("Input Type:" + name);
-        switch (name){
-            case "SelctStmt":
-                System.out.println("Dealing SelectStmt");
-                ASTSelectStmt selectStatement = (ASTSelectStmt) type;
-                selectStatement.exec();
-                break;
-            case "UpdateStmt":
-                // TODO 更新语句
-                System.out.println("Dealing SelectStmt");
-                break;
-            case "CreateStmt":
-                // TODO 建表语句
-                System.out.println("Dealing SelectStmt");
-                break;
-            case "DeleteStmt":
-                // TODO 删除语句
-                System.out.println("Dealing SelectStmt");
-                break;
-            default:
-                System.out.println("");
-                break;
-
+        if(type == 1){
+            Select.dealSelectStmt("YangSQL", astSelectStmt);
+        }else if(type == 5){
+            CreateAndInsert.dealInsertData("YangSQL", insertStmt);
+        }else if(type == 2){
+            CreateAndInsert.dealCreateStmt("YangSQL", createStmt);
         }
     }
 }

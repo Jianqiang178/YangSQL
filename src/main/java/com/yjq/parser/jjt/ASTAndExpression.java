@@ -34,7 +34,15 @@ public class ASTAndExpression extends SimpleNode implements Expression {
 
     @Override
     public boolean result() {
-        return false;
+        boolean l = left.result();
+        if (leftNot) l = !l;
+        boolean result = l;
+        if (and) {
+            boolean r = right.result();
+            if (rightNot) r = !r;
+            result = l && r;
+        }
+        return result;
     }
 }
 /* JavaCC - OriginalChecksum=7384133b0c0e0c2b52bd56e17f2c86d3 (do not edit this line) */

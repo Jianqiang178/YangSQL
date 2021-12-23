@@ -1,17 +1,22 @@
 package com.yjq.parser.data;
 
+import com.yjq.parser.jjt.ASTConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class Head implements Serializable {
+    Integer index;
     String name;
     String dataType;
+    List<ASTConstraint> constraints;
 
     public int getType() {
         if (dataType.equalsIgnoreCase("int")) {
@@ -25,5 +30,22 @@ public class Head implements Serializable {
         } else {
             return -1;
         }
+    }
+
+    public List<Integer> getCons() {
+        if (constraints != null && constraints.size() > 0) {
+            return constraints.stream().map(ASTConstraint::getType).collect(Collectors.toList());
+        } else {
+            return null;
+        }
+    }
+
+    public ASTConstraint getConsByType(Integer type) {
+        for (ASTConstraint constraint : constraints) {
+            if (constraint.getType().equals(type)) {
+                return constraint;
+            }
+        }
+        return null;
     }
 }

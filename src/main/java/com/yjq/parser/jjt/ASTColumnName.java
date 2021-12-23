@@ -38,7 +38,7 @@ public class ASTColumnName extends SimpleNode {
     public void setDataValue(Map<String, GridData> dataMap) throws YangSQLException {
         boolean find = false;
         for (Map.Entry<String, GridData> entry : dataMap.entrySet()) {
-            System.out.println("key = " + entry.getKey() + ", value = " + entry.getValue());
+//            System.out.println("key = " + entry.getKey() + ", value = " + entry.getValue());
             if (entry.getKey().equals(name)) {
                 ASTValue value1 = new ASTValue();
                 ASTData data = new ASTData();

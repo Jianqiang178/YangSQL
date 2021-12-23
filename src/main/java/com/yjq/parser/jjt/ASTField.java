@@ -6,8 +6,10 @@ import lombok.Data;
 
 @Data
 public class ASTField extends SimpleNode {
+  private Integer index;
   private String dataType;
   private String name;
+  private ASTConstraints constraints;
   public ASTField(int id) {
     super(id);
   }

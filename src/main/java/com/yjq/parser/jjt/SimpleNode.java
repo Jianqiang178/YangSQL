@@ -22,6 +22,7 @@ public class SimpleNode implements Node {
     protected int id;
     protected Object value;
     protected SQLParser parser;
+    private ASTStatement statement;
 
     public SimpleNode(int i) {
         id = i;
@@ -72,13 +73,16 @@ public class SimpleNode implements Node {
         }
         return result;
     }
+
     public void setColumnValue(Map<String, GridData> dataMap) throws YangSQLException {
-        if(getName().equals("ColumnName")){
+        if (getNodeName().equals("ColumnName")) {
             ASTColumnName columnName = (ASTColumnName) this;
             columnName.setDataValue(dataMap);
         }
-        for (Node child : children) {
-            ((SimpleNode) child).setColumnValue(dataMap);
+        if (children != null && children.length > 0) {
+            for (Node child : children) {
+                ((SimpleNode) child).setColumnValue(dataMap);
+            }
         }
     }
 
@@ -87,7 +91,7 @@ public class SimpleNode implements Node {
      *
      * @return
      */
-    public String getName() {
+    public String getNodeName() {
         return SQLParserTreeConstants.jjtNodeName[getId()];
     }
 

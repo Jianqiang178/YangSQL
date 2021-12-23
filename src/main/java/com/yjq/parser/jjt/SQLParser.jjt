@@ -9,16 +9,24 @@ package com.yjq.parser.jjt;
 import com.sun.org.apache.bcel.internal.generic.ARETURN;
 import com.yjq.parser.jjt.*;
 import com.yjq.parser.operator.*;
+import com.yjq.parser.server.*;
 public class SQLParser{
     public static void main(String args[]) {
+        CreateAndInsert.initDb();
         System.out.println("Reading from standard input...");
         SQLParser p = new SQLParser(System.in);
         try {
-          SimpleNode n = p.Start();
-          n.dump("");
-//          ASTComparisonExpression comparisonExpression = p.ComparisonExpression();
-//          System.out.println(comparisonExpression.compare());
-          System.out.println("Thank you.");
+            while (true){
+                try{
+                    System.out.print("YangSQL > ");
+                    SimpleNode n = p.Start();
+                    n.getStatement().exec();
+    //                n.dump("");
+//                    System.out.println("");
+                }catch(Exception e){
+                    System.out.println(e.getMessage());
+                }
+            }
         } catch (Exception e) {
           System.out.println("Oops.");
           System.out.println(e.getMessage());
@@ -69,6 +77,11 @@ SKIP:{"\n"|"\r"|"\r\n"}TOKEN:/*定义关键字*/
     | <FIRST:"first">
     | <NULLS:"nulls">
     | <EXISTS:"exists">
+    | <REFERENCES:"references">
+    | <FOREIGN:"foreign">
+    | <PRIMARY:"primary">
+    | <KEY:"key">
+    | <UNIQUE:"unique">
 }
 TOKEN:/*定义符号*/
 {
@@ -138,15 +151,20 @@ void LiteralValue():{}
 {
     NumericLiteral()
 }
-SimpleNode Start() : {}
+SimpleNode Start() : {ASTStatement statement;}
 {
-    Statement() ";"
+    statement = Statement(){jjtThis.setStatement(statement);} ";"
     { return jjtThis; }
 }
-void Statement() : {ASTSelectStmt selectStmt;}
+ASTStatement Statement() : {ASTSelectStmt selectStmt; ASTCreateStmt createStmt; ASTInsertStmt insertStmt;}
 {
-    selectStmt = SelectStmt(){jjtThis.setType(1);jjtThis.setAstSelectStmt(selectStmt);}
-    |CreateStmt()|DropT()|DeleteStmt()|InsertStmt()|UpdateStmt()
+    selectStmt = SelectStmt(){jjtThis.setType(1);jjtThis.setAstSelectStmt(selectStmt);return jjtThis;}
+    |createStmt = CreateStmt(){jjtThis.setType(2);jjtThis.setCreateStmt(createStmt);return jjtThis;}
+    |DropT(){return jjtThis;}
+    |DeleteStmt(){return jjtThis;}
+    |insertStmt = InsertStmt(){jjtThis.setType(5);jjtThis.setInsertStmt(insertStmt);return jjtThis;}
+    |UpdateStmt()
+   {return jjtThis;}
 }
 /**
 * 查询语句
@@ -264,7 +282,7 @@ ASTValue Value():
     ASTColumnName columnName;
 }
 {
-    data = Data(){jjtThis.setData(data);}
+    data = Data(){jjtThis.setData(data);return jjtThis;}
     | columnName = ColumnName(){jjtThis.setColumnName(columnName);return jjtThis;}
 }
 ASTExpression Expression():{ASTOrExpression expression;}
@@ -399,15 +417,29 @@ ASTCreateStmt CreateStmt():{Token t;ASTColList colList;}
     <CREATE><TABLE>t = <IDENTIFIER>{jjtThis.setTableName(t.image);} <LEFTPARENTHESES>colList = ColList(){jjtThis.setColList(colList);}<RIGHTPARENTHESES>
     {return jjtThis;}
 }
-ASTColList ColList():{ASTField field;}
+ASTColList ColList():{ASTField field;int i = 0;}
 {
-    field = Field(){jjtThis.getFields().add(field);}[(<COMMA>field = Field(){jjtThis.getFields().add(field);})+]{return jjtThis;}
+    field = Field(){field.setIndex(i);i++;jjtThis.getFields().add(field);}
+    [(<COMMA>field = Field(){field.setIndex(i);i++;jjtThis.getFields().add(field);})+]{return jjtThis;}
 }
-ASTField Field():{Token t;}
+ASTField Field():{Token t; ASTConstraints constraints;}
 {
     t = <IDENTIFIER>{jjtThis.setName(t.image);}
     (t = <INT>| t = <DATE>| t = <DOUBLE> | t = <CHAR><LEFTPARENTHESES><INTEGER_LITERAL><RIGHTPARENTHESES>)
+    [constraints = Constraints(){jjtThis.setConstraints(constraints);}]
     {jjtThis.setDataType(t.image);return jjtThis;}
+}
+ASTConstraints Constraints():{ASTConstraint constraint;}
+{
+    constraint = Constraint(){jjtThis.getConstraintList().add(constraint);} [(constraint = Constraint(){jjtThis.getConstraintList().add(constraint);})+]{return jjtThis;}
+}
+ASTConstraint Constraint():{ASTTableName tableName; ASTColumnName columnName;}
+{
+    (<NOT> <NULL>{jjtThis.setType(1);return jjtThis;})
+    |(<PRIMARY> <KEY>{jjtThis.setType(2);return jjtThis;})
+    |(<FOREIGN> <KEY> <REFERENCES> tableName = TableName(){jjtThis.setTableName(tableName);} <LEFTPARENTHESES> columnName = ColumnName(){jjtThis.setColumnName(columnName);} <RIGHTPARENTHESES>{jjtThis.setType(3);return jjtThis;})
+    | <UNIQUE>{jjtThis.setType(4);}
+    {return jjtThis;}
 }
 /*--------- DELETE & DROP 语句 ----------*/
 void DropT():{}

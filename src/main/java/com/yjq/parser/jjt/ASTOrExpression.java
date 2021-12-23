@@ -10,6 +10,7 @@ public class ASTOrExpression extends SimpleNode implements Expression {
     private ASTAndExpression left = null;
     private Boolean or = false;
     private ASTAndExpression right = null;
+
     public ASTOrExpression(int id) {
         super(id);
     }
@@ -30,7 +31,11 @@ public class ASTOrExpression extends SimpleNode implements Expression {
 
     @Override
     public boolean result() {
-        return false;
+        if (or) {
+            return left.result() || right.result();
+        } else {
+            return left.result();
+        }
     }
 }
 /* JavaCC - OriginalChecksum=d0c8aa81caea467f1cfd796e324f4d1d (do not edit this line) */

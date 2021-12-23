@@ -31,30 +31,29 @@ public class ASTResultColumn extends SimpleNode {
      **/
     public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-        return
-                visitor.visit(this, data);
+        return visitor.visit(this, data);
     }
 
     /**
      * resultColumn有且仅有一个子节点
      */
-    public void getResultColumn() {
-        if (children.length == 0) {
-            System.out.println("ResultColumn have no children");
-            return;
-        }
-        SimpleNode child = (SimpleNode) children[0];
-        this.childName = child.getName();
-        if (child.getName().equals("ColumnName")) {
-            columnName = (ASTColumnName) child;
-            type = 1;
-        } else if (child.getName().equals("TableName")) {
-            columnName = (ASTColumnName) child;
-            type = 2;
-        } else if (child.getName().equals("Function")) {
-            columnName = (ASTColumnName) child;
-        }
-
-    }
+//    public void getResultColumn() {
+//        if (children.length == 0) {
+//            System.out.println("ResultColumn have no children");
+//            return;
+//        }
+//        SimpleNode child = (SimpleNode) children[0];
+//        this.childName = child.getName();
+//        if (child.getName().equals("ColumnName")) {
+//            columnName = (ASTColumnName) child;
+//            type = 1;
+//        } else if (child.getName().equals("TableName")) {
+//            columnName = (ASTColumnName) child;
+//            type = 2;
+//        } else if (child.getName().equals("Function")) {
+//            columnName = (ASTColumnName) child;
+//        }
+//
+//    }
 }
 /* JavaCC - OriginalChecksum=7f5bab010b7d8e2aa3b06bd5a98d572a (do not edit this line) */

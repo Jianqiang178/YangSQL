@@ -93,59 +93,69 @@ public interface SQLParserConstants {
   /** RegularExpression Id. */
   int EXISTS = 45;
   /** RegularExpression Id. */
-  int UNDERSCORE = 46;
+  int REFERENCES = 46;
   /** RegularExpression Id. */
-  int COMMA = 47;
+  int FOREIGN = 47;
   /** RegularExpression Id. */
-  int SEMICOLON = 48;
+  int PRIMARY = 48;
   /** RegularExpression Id. */
-  int COLON = 49;
+  int KEY = 49;
   /** RegularExpression Id. */
-  int LEFTPARENTHESES = 50;
+  int UNIQUE = 50;
   /** RegularExpression Id. */
-  int RIGHTPARENTHESES = 51;
+  int UNDERSCORE = 51;
   /** RegularExpression Id. */
-  int EQUAL = 52;
+  int COMMA = 52;
   /** RegularExpression Id. */
-  int PLUS = 53;
+  int SEMICOLON = 53;
   /** RegularExpression Id. */
-  int MINUS = 54;
+  int COLON = 54;
   /** RegularExpression Id. */
-  int TIMES = 55;
+  int LEFTPARENTHESES = 55;
   /** RegularExpression Id. */
-  int DIVIDE = 56;
+  int RIGHTPARENTHESES = 56;
   /** RegularExpression Id. */
-  int DOT = 57;
+  int EQUAL = 57;
   /** RegularExpression Id. */
-  int GREATERTHAN = 58;
+  int PLUS = 58;
   /** RegularExpression Id. */
-  int GREATERTHANOREQUALTO = 59;
+  int MINUS = 59;
   /** RegularExpression Id. */
-  int LESSTHAN = 60;
+  int TIMES = 60;
   /** RegularExpression Id. */
-  int LESSTHANOREQUALTO = 61;
+  int DIVIDE = 61;
   /** RegularExpression Id. */
-  int LEFTQUOTATION = 62;
+  int DOT = 62;
   /** RegularExpression Id. */
-  int NOTEUQAL = 63;
+  int GREATERTHAN = 63;
   /** RegularExpression Id. */
-  int NOTEQUAL = 64;
+  int GREATERTHANOREQUALTO = 64;
   /** RegularExpression Id. */
-  int NOTGREATER = 65;
+  int LESSTHAN = 65;
   /** RegularExpression Id. */
-  int NOTLESS = 66;
+  int LESSTHANOREQUALTO = 66;
   /** RegularExpression Id. */
-  int LQUOTATION = 67;
+  int LEFTQUOTATION = 67;
   /** RegularExpression Id. */
-  int INTEGER_LITERAL = 68;
+  int NOTEUQAL = 68;
   /** RegularExpression Id. */
-  int FLOAT_LITERAL = 69;
+  int NOTEQUAL = 69;
   /** RegularExpression Id. */
-  int DIGIT = 70;
+  int NOTGREATER = 70;
   /** RegularExpression Id. */
-  int IDENTIFIER = 71;
+  int NOTLESS = 71;
   /** RegularExpression Id. */
-  int LETTER = 72;
+  int LQUOTATION = 72;
+  /** RegularExpression Id. */
+  int INTEGER_LITERAL = 73;
+  /** RegularExpression Id. */
+  int FLOAT_LITERAL = 74;
+  /** RegularExpression Id. */
+  int DIGIT = 75;
+  /** RegularExpression Id. */
+  int IDENTIFIER = 76;
+  /** RegularExpression Id. */
+  int LETTER = 77;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -198,6 +208,11 @@ public interface SQLParserConstants {
     "\"first\"",
     "\"nulls\"",
     "\"exists\"",
+    "\"references\"",
+    "\"foreign\"",
+    "\"primary\"",
+    "\"key\"",
+    "\"unique\"",
     "\"_\"",
     "\",\"",
     "\";\"",
