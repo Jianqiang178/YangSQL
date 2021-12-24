@@ -7,6 +7,12 @@ import lombok.Data;
 
 @Data
 public class ASTNullExpression extends SimpleNode implements Expression {
+    private ASTColumnName columnName = null;
+    private boolean isNull = false;
+    private boolean is = false;
+    private boolean not = false;
+    private boolean nulls = false;
+
     public ASTNullExpression(int id) {
         super(id);
     }
@@ -27,7 +33,15 @@ public class ASTNullExpression extends SimpleNode implements Expression {
 
     @Override
     public boolean result() {
-        return false;
+        if (isNull) {
+            return columnName.getData() == null;
+        } else {
+            if (not) {
+                return columnName.getData() != null;
+            } else {
+                return columnName.getData() == null;
+            }
+        }
     }
 }
 /* JavaCC - OriginalChecksum=8c8d5646d72ac1c48e68bf76124c52df (do not edit this line) */

@@ -25,6 +25,7 @@ public class SQLParser{
 //                    System.out.println("");
                 }catch(Exception e){
                     System.out.println(e.getMessage());
+//                    e.printStackTrace();
                 }
             }
         } catch (Exception e) {
@@ -62,7 +63,7 @@ SKIP:{"\n"|"\r"|"\r\n"}TOKEN:/*定义关键字*/
     | <DOUBLE:"double">
     | <IS:"is">
     | <NOT:"not">
-    | <ISNULL:"ISNULL">
+    | <ISNULL:"isnull">
     | <NOTNULL:"NOTNULL">
     | <NULL:"null">
     | <OR:"or">
@@ -110,8 +111,12 @@ TOKEN:/*定义符号*/
 }
 TOKEN:/* 定义整数 */
 {
-    <INTEGER_LITERAL:["1"-"9"](<DIGIT>)*> |
+    <INTEGER_LITERAL:["0"]|(["1"-"9"](<DIGIT>)*)> |
     <FLOAT_LITERAL: ["1"-"9"](["0"-"9"])* "." (["0"-"9"])* >
+}
+TOKEN:
+{
+    <SYMBOL:["_", "%"]>
 }
 TOKEN:/*定义数字*/
 {
@@ -122,7 +127,7 @@ TOKEN:/* 定义标识符 */
     <IDENTIFIER:<LETTER>
     |<LETTER><DIGIT>
     | <LETTER>(<LETTER>| <DIGIT> | <UNDERSCORE>)*(<LETTER>| <DIGIT>)+>
-    | <#LETTER:["a"-"z", "A"-"Z"]>
+    | <#LETTER:["a"-"z", "A"-"Z"]| <SYMBOL> >
 }/* 语法解析*/
 ASTTableName TableName():{Token t; Token y;}
 {
@@ -156,15 +161,14 @@ SimpleNode Start() : {ASTStatement statement;}
     statement = Statement(){jjtThis.setStatement(statement);} ";"
     { return jjtThis; }
 }
-ASTStatement Statement() : {ASTSelectStmt selectStmt; ASTCreateStmt createStmt; ASTInsertStmt insertStmt;}
+ASTStatement Statement() : {ASTSelectStmt selectStmt; ASTCreateStmt createStmt; ASTInsertStmt insertStmt; ASTUpdateStmt updateStmt; ASTDeleteStmt deleteStmt;}
 {
     selectStmt = SelectStmt(){jjtThis.setType(1);jjtThis.setAstSelectStmt(selectStmt);return jjtThis;}
     |createStmt = CreateStmt(){jjtThis.setType(2);jjtThis.setCreateStmt(createStmt);return jjtThis;}
     |DropT(){return jjtThis;}
-    |DeleteStmt(){return jjtThis;}
+    |deleteStmt = DeleteStmt(){jjtThis.setType(4);jjtThis.setDeleteStmt(deleteStmt);return jjtThis;}
     |insertStmt = InsertStmt(){jjtThis.setType(5);jjtThis.setInsertStmt(insertStmt);return jjtThis;}
-    |UpdateStmt()
-   {return jjtThis;}
+    |updateStmt = UpdateStmt(){jjtThis.setType(6); jjtThis.setUpdateStmt(updateStmt);return jjtThis;}
 }
 /**
 * 查询语句
@@ -174,13 +178,15 @@ ASTSelectStmt SelectStmt():
     ASTResult astResult;
     ASTFromList astFromList;
     ASTExpression expression;
+    ASTOrderBy orderBy;
+    ASTLimit limit;
 }
 {
     <SELECT>[<DISTINCT>]astResult = Result(){jjtThis.setAstResult(astResult);}<FROM>astFromList = FromList(){jjtThis.setAstFromList(astFromList);}
     [<WHERE> expression = Expression(){jjtThis.setExpression(expression);}| LOOKAHEAD(2)Exist()]
     [GroupBy()] /* Group by having子句 */
-    [OrderBy() ] /* Order子句 */
-    [Limit()] /* Limit子句 */
+    [orderBy = OrderBy(){jjtThis.setOrderBy(orderBy);}] /* Order子句 */
+    [limit = Limit(){jjtThis.setLimit(limit);}] /* Limit子句 */
     {return jjtThis;}
 }
 void ArithmeticOperator():{}
@@ -222,34 +228,36 @@ ASTOrExpression OrExpression():{ASTAndExpression astAndExpression;}
 /**
 * 空值表达式
 */
-ASTNullExpression NullExpression():{}
+ASTNullExpression NullExpression():{ASTColumnName columnName;}
 {
-    ColumnName()
-    <ISNULL>
-    | <IS> [<NOT>] <NULL>
+    columnName = ColumnName(){jjtThis.setColumnName(columnName);}
+    (<ISNULL>{jjtThis.setNull(true);return jjtThis;}
+    | (<IS>{jjtThis.setIs(true);} [<NOT>{jjtThis.setNot(true);}] <NULL>{jjtThis.setNulls(true);return jjtThis;}))
 }
 /**
 * like匹配表达式
 */
-ASTLikeExpression LikeExpression():{}{
-    ColumnName()
-    [<NOT>] <LIKE> StringLiteral()
+ASTLikeExpression LikeExpression():{ASTColumnName columnName;ASTStringLiteral stringLiteral;}
+{
+    columnName = ColumnName(){jjtThis.setColumnName(columnName);}
+    [<NOT>{jjtThis.setNot(true);}] <LIKE> stringLiteral = StringLiteral(){jjtThis.setStringLiteral(stringLiteral);return jjtThis;}
 }
 /**
 * in判断表达式
 */
-ASTInExpression InExpression():{}
+ASTInExpression InExpression():{ASTColumnName columnName; ASTData data;}
 {
-    ColumnName()
-    [<NOT>] <IN> <LEFTPARENTHESES> Value() [(<COMMA> Value())+]<RIGHTPARENTHESES>
+    columnName = ColumnName(){jjtThis.setColumnName(columnName);}
+    [<NOT>{jjtThis.setNot(true);}] <IN> <LEFTPARENTHESES> data = Data(){jjtThis.getData().add(data);} [(<COMMA> data = Data(){jjtThis.getData().add(data);})+]<RIGHTPARENTHESES>{return jjtThis;}
 }
 /**
 * between表达式
 */
-ASTBetweenExpression BetweenExpression():{}
+ASTBetweenExpression BetweenExpression():{ASTColumnName columnName; ASTData data;}
 {
-    ColumnName()
-    [<NOT>] <BETWEEN> Value() <AND> Value()
+    columnName = ColumnName(){jjtThis.setColumnName(columnName);}
+    [<NOT>{jjtThis.setNot(true);}] <BETWEEN> data = Data(){jjtThis.setFirst(data);} <AND> data = Data(){jjtThis.setSecond(data);}
+    {return jjtThis;}
 }
 /**
 * 比较表达式
@@ -268,7 +276,7 @@ ASTComparisonExpression ComparisonExpression():
     | <GREATERTHANOREQUALTO>{jjtThis.setOperator(new GreaterThanOrEqualTo());}
     | <NOTEQUAL>{jjtThis.setOperator(new NotEqual());}
     | <NOTGREATER>{jjtThis.setOperator(new LessThanOrEqualTo());}
-    | <NOTLESS>){jjtThis.setOperator(new GreaterThanOrEqualTo());}
+    | <NOTLESS>{jjtThis.setOperator(new GreaterThanOrEqualTo());})
     value = Value(){jjtThis.setValue(value);return jjtThis;}
 }
 ASTData Data():{ASTNumericLiteral numericLiteral;ASTStringLiteral stringLiteral;}
@@ -310,9 +318,13 @@ ASTCondition Condition():
 /**
 * ORDER BY子句
 */
-void OrderBy():{}
+ASTOrderBy OrderBy():{ASTColumnName columnName;}
 {
-    <ORDER> <BY> ColumnName() [(<COMMA> ColumnName())+] [<ASC> |<DESC>][<NULL> (<FIRST> |<LAST>)]
+    <ORDER> <BY> columnName = ColumnName(){jjtThis.getColumnNames().add(columnName);}
+    [(<COMMA> columnName = ColumnName(){jjtThis.getColumnNames().add(columnName);})+]
+    [<ASC>{jjtThis.setAsc(true);} |<DESC>{jjtThis.setAsc(false);}]
+    [<NULL>{jjtThis.setNulls(true);} (<FIRST>{jjtThis.setNullFirst(true);} |<LAST>{jjtThis.setNullLast(true);})]
+    {return jjtThis;}
 }
 /**
 * GROUP BY 子句
@@ -324,9 +336,11 @@ void GroupBy():{}
 /**
 * LIMIT子句
 */
-void Limit():{}
+ASTLimit Limit():{Token t;}
 {
-    <LIMIT> <INTEGER_LITERAL> [<OFFSET> <INTEGER_LITERAL> | <COMMA> <INTEGER_LITERAL>]
+    <LIMIT> t = <INTEGER_LITERAL>{jjtThis.setLimit(Integer.parseInt(t.image));}
+    [(<OFFSET> t = <INTEGER_LITERAL>){jjtThis.setOffset(Integer.parseInt(t.image));} | <COMMA> t = <INTEGER_LITERAL>{jjtThis.setOffset(Integer.parseInt(t.image));}]
+    {return jjtThis;}
 }
 /**
 * Exist
@@ -461,9 +475,9 @@ ASTSetList SetList():{ASTUpdateValue updateValue;}
 {
     updateValue = UpdateValue(){jjtThis.getUpdateValues().add(updateValue);} [(<COMMA> updateValue = UpdateValue(){jjtThis.getUpdateValues().add(updateValue);})+]{return jjtThis;}
 }
-ASTUpdateValue UpdateValue():{ASTColumnName columnName;ASTValue value;}
+ASTUpdateValue UpdateValue():{ASTColumnName columnName;ASTData data;}
 {
-    columnName = ColumnName(){jjtThis.setColumnName(columnName);} <EQUAL> value = Value(){jjtThis.setValue(value); return jjtThis;}
+    columnName = ColumnName(){jjtThis.setColumnName(columnName);} <EQUAL> data = Data(){jjtThis.setData(data); return jjtThis;}
 }
 /*-------- INSERT 语句 -----------*/
 ASTInsertStmt InsertStmt():{ASTTableName tableName; ASTColumnList columnList; ASTDataList dataList;}

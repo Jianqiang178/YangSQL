@@ -5,8 +5,15 @@ package com.yjq.parser.jjt;
 import com.yjq.parser.interfaces.Expression;
 import lombok.Data;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 @Data
 public class ASTLikeExpression extends SimpleNode implements Expression {
+    private ASTColumnName columnName = null;
+    private ASTStringLiteral stringLiteral = null;
+    private boolean not = false;
+
     public ASTLikeExpression(int id) {
         super(id);
     }
@@ -21,13 +28,20 @@ public class ASTLikeExpression extends SimpleNode implements Expression {
      **/
     public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-        return
-                visitor.visit(this, data);
+        return visitor.visit(this, data);
     }
 
     @Override
     public boolean result() {
-        return false;
+        if (columnName.getData() == null) {
+            return false;
+        }
+        String value = stringLiteral.getValue();
+        value = value.replaceAll("\\*", "\\*").replaceAll("\\.", "\\.");
+        value = value.replaceAll("%", ".*").replaceAll("_", ".");
+        Pattern p = Pattern.compile(value);
+        Matcher m = p.matcher(columnName.getData().getValue());
+        return m.matches();
     }
 }
 /* JavaCC - OriginalChecksum=8bd446c1d272bb5e370484d978697304 (do not edit this line) */

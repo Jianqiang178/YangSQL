@@ -12,10 +12,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Select {
@@ -39,6 +36,7 @@ public class Select {
     public static void dealSelectStmt(String db, ASTSelectStmt selectStmt) throws YangSQLException {
         String tableName = selectStmt.getAstFromList().getFromTables().get(0).getTableName().getName();
         Table table = CreateAndInsert.readTableMeta(db, tableName);
+        Map<String, Integer> integerMap = table.getHeads().values().stream().collect(Collectors.toMap(Head::getName, Head::getIndex));
         List<ASTColumnName> columnNames = new ArrayList<>();
         List<String> columns = null;
         if (!selectStmt.getAstResult().isAll()) {
@@ -52,7 +50,7 @@ public class Select {
                 throw new YangSQLException("'" + column + "'" + "列不存在");
             }
         }
-        List<List<GridData>> result = readTable(db, tableName, columns);
+        List<List<GridData>> result = readTable(db, tableName, null);
         if (selectStmt.getExpression() != null) {
             List<List<GridData>> lists = new ArrayList<>();
             for (List<GridData> gridData : result) {
@@ -62,11 +60,24 @@ public class Select {
                     lists.add(gridData);
                 }
             }
-            outputResult(table, columns, lists);
-        } else {
-            outputResult(table, columns, result);
+            result = lists;
+//            outputResult(table, columns, lists);
         }
-
+        if (selectStmt.getOrderBy() != null) {
+            List<String> columnss = columns;
+            List<Head> heads = table.getHeads().values().stream().filter(x -> columnss.contains(x.getName())).collect(Collectors.toList());
+            List<String> c = selectStmt.getOrderBy().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
+            selectStmt.getOrderBy().sort(result, integerMap, c);
+        }
+        if (selectStmt.getLimit() != null) {
+            List<List<GridData>> lists = new ArrayList<>();
+            int size = Math.min(selectStmt.getLimit().getLimit(), result.size());
+            for (int i = selectStmt.getLimit().getOffset(); i < size; i++) {
+                lists.add(result.get(i));
+            }
+            result = lists;
+        }
+        outputResult(table, columns, result);
     }
 
     /**
@@ -171,7 +182,11 @@ public class Select {
         try {
             reader = new BufferedReader(new FileReader(file));
             String tempStr;
-            while ((tempStr = reader.readLine()) != null) {
+            while (true) {
+                tempStr = reader.readLine();
+                if (tempStr == null || "".equals(tempStr)) {
+                    break;
+                }
                 List<GridData> gridData = translateLine(table, tempStr, index);
                 result.add(gridData);
             }
@@ -231,13 +246,15 @@ public class Select {
     public static void outputResult(Table table, List<String> columns, List<List<GridData>> data) {
         List<Head> heads = table.getHeads().values().stream().filter(x -> columns.contains(x.getName())).sorted(Comparator.comparing(Head::getIndex)).collect(Collectors.toList());
         heads.forEach(head -> System.out.print(head.getName() + "\t"));
+        List<Integer> index = heads.stream().map(Head::getIndex).collect(Collectors.toList());
         System.out.println();
         for (List<GridData> datum : data) {
-            for (GridData gridData : datum) {
-                System.out.print(gridData.getValue() + "\t");
+            for (Integer integer : index) {
+                System.out.print(datum.get(integer).getValue() + "\t");
             }
             System.out.println();
         }
-        System.out.println(data.size() +" rows in set");
+        System.out.println(data.size() + " rows in set");
     }
+
 }

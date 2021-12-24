@@ -2,8 +2,12 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
-public
-class ASTLimit extends SimpleNode {
+import lombok.Data;
+
+@Data
+public class ASTLimit extends SimpleNode {
+  private Integer limit;
+  private Integer offset;
   public ASTLimit(int id) {
     super(id);
   }

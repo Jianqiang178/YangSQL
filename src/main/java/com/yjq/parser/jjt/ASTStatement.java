@@ -5,7 +5,9 @@ package com.yjq.parser.jjt;
 import com.yjq.parser.exceptions.YangSQLException;
 import com.yjq.parser.select.SelectStatement;
 import com.yjq.parser.server.CreateAndInsert;
+import com.yjq.parser.server.Delete;
 import com.yjq.parser.server.Select;
+import com.yjq.parser.server.Update;
 import lombok.Data;
 
 import java.io.IOException;
@@ -16,6 +18,9 @@ public class ASTStatement extends SimpleNode {
     private ASTSelectStmt astSelectStmt;
     private ASTInsertStmt insertStmt;
     private ASTCreateStmt createStmt;
+    private ASTDeleteStmt deleteStmt;
+    private ASTUpdateStmt updateStmt;
+
     public ASTStatement(int id) {
         super(id);
     }
@@ -37,16 +42,20 @@ public class ASTStatement extends SimpleNode {
      * 处理statement语句，有且只有一个子节点，select/create/update/delete
      */
     public void exec() throws YangSQLException, IOException {
-        if(children.length == 0){
+        if (children.length == 0) {
             System.out.println("Statement节点无子节点");
             return;
         }
-        if(type == 1){
+        if (type == 1) {
             Select.dealSelectStmt("YangSQL", astSelectStmt);
-        }else if(type == 5){
+        } else if (type == 6) {
+            Update.dealUpdateStmt("YangSQL", updateStmt);
+        } else if (type == 5) {
             CreateAndInsert.dealInsertData("YangSQL", insertStmt);
-        }else if(type == 2){
+        } else if (type == 2) {
             CreateAndInsert.dealCreateStmt("YangSQL", createStmt);
+        } else if (type == 4) {
+            Delete.dealDeleteStmt("YangSQL", deleteStmt);
         }
     }
 }

@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class ASTUpdateValue extends SimpleNode {
     private ASTColumnName columnName;
-    private ASTValue value;
+    private ASTData data;
 
     public ASTUpdateValue(int id) {
         super(id);
@@ -23,8 +23,7 @@ public class ASTUpdateValue extends SimpleNode {
      **/
     public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-        return
-                visitor.visit(this, data);
+        return visitor.visit(this, data);
     }
 }
 /* JavaCC - OriginalChecksum=e3534f44fb8a04db4653e52eb01262fb (do not edit this line) */

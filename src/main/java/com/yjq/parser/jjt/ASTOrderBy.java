@@ -2,22 +2,75 @@
 /* JavaCCOptions:MULTI=true,NODE_USES_PARSER=false,VISITOR=true,TRACK_TOKENS=false,NODE_PREFIX=AST,NODE_EXTENDS=,NODE_FACTORY=,SUPPORT_CLASS_VISIBILITY_PUBLIC=true */
 package com.yjq.parser.jjt;
 
-public
-class ASTOrderBy extends SimpleNode {
-  public ASTOrderBy(int id) {
-    super(id);
-  }
+import com.sun.org.apache.bcel.internal.generic.ARETURN;
+import com.yjq.parser.data.GridData;
+import lombok.Data;
 
-  public ASTOrderBy(SQLParser p, int id) {
-    super(p, id);
-  }
+import java.util.*;
+
+@Data
+public class ASTOrderBy extends SimpleNode {
+    private List<ASTColumnName> columnNames = new ArrayList<>();
+    private boolean asc = true;
+    private boolean nulls = false;
+    private boolean nullFirst = false;
+    private boolean nullLast = false;
+
+    public ASTOrderBy(int id) {
+        super(id);
+    }
+
+    public ASTOrderBy(SQLParser p, int id) {
+        super(p, id);
+    }
 
 
-  /** Accept the visitor. **/
-  public Object jjtAccept(SQLParserVisitor visitor, Object data) {
+    /**
+     * Accept the visitor.
+     **/
+    public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-    return
-    visitor.visit(this, data);
-  }
+        return
+                visitor.visit(this, data);
+    }
+
+    public void sort(List<List<GridData>> result, Map<String, Integer> integerMap, List<String> c) {
+        result.sort(new Comparator<List<GridData>>() {
+            @Override
+            public int compare(List<GridData> o1, List<GridData> o2) {
+                for (String s : c) {
+                    int index = integerMap.get(s);
+                    if (o1.get(index) == null || o1.get(index).getValue() == null) {
+                        if (isNulls()) {
+                            if (isNullFirst()) {
+                                return 1;
+                            } else if (isNullLast()) {
+                                return -1;
+                            }
+                        } else {
+                            return -1;
+                        }
+                    } else if (o2.get(index) == null || o2.get(index).getValue() == null) {
+                        if (isNulls()) {
+                            if (isNullFirst()) {
+                                return 1;
+                            } else if (isNullLast()) {
+                                return -1;
+                            }
+                        } else {
+                            return -1;
+                        }
+                    } else {
+                        if (asc) {
+                            return o1.get(index).getValue().compareTo(o2.get(index).getValue());
+                        } else {
+                            return o2.get(index).getValue().compareTo(o1.get(index).getValue());
+                        }
+                    }
+                }
+                return 1;
+            }
+        });
+    }
 }
 /* JavaCC - OriginalChecksum=cfac3f6d05ad022425707cfb2f9f5588 (do not edit this line) */

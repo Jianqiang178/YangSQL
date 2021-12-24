@@ -151,11 +151,13 @@ public interface SQLParserConstants {
   /** RegularExpression Id. */
   int FLOAT_LITERAL = 74;
   /** RegularExpression Id. */
-  int DIGIT = 75;
+  int SYMBOL = 75;
   /** RegularExpression Id. */
-  int IDENTIFIER = 76;
+  int DIGIT = 76;
   /** RegularExpression Id. */
-  int LETTER = 77;
+  int IDENTIFIER = 77;
+  /** RegularExpression Id. */
+  int LETTER = 78;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -193,7 +195,7 @@ public interface SQLParserConstants {
     "\"double\"",
     "\"is\"",
     "\"not\"",
-    "\"ISNULL\"",
+    "\"isnull\"",
     "\"NOTNULL\"",
     "\"null\"",
     "\"or\"",
@@ -237,6 +239,7 @@ public interface SQLParserConstants {
     "\"\\\'\"",
     "<INTEGER_LITERAL>",
     "<FLOAT_LITERAL>",
+    "<SYMBOL>",
     "<DIGIT>",
     "<IDENTIFIER>",
     "<LETTER>",

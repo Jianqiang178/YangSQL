@@ -11,6 +11,9 @@ public class ASTSelectStmt extends SimpleNode {
     private ASTResult astResult;
     private ASTFromList astFromList;
     private ASTExpression expression;
+    private ASTOrderBy orderBy = null;
+    private ASTLimit limit = null;
+
     public ASTSelectStmt(int id) {
         super(id);
     }

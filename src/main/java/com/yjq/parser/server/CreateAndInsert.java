@@ -120,7 +120,7 @@ public class CreateAndInsert {
         }
         data.append("\n");
         String path = getDataPath(db, table.getName());
-        appendContent(path, data.toString());
+        appendContent(path, data.toString(), true);
     }
 
     /**
@@ -219,13 +219,13 @@ public class CreateAndInsert {
      * @param path
      * @param content
      */
-    public static void appendContent(String path, String content) {
+    public static void appendContent(String path, String content, boolean append) {
         File file = new File(path);
         if (file.exists() && !file.isDirectory()) {
             FileWriter writer = null;
             try {
                 // 打开一个写文件器，构造函数中的第二个参数true表示以追加形式写文件
-                writer = new FileWriter(path, true);
+                writer = new FileWriter(path, append);
                 writer.write(content);
             } catch (IOException e) {
                 e.printStackTrace();

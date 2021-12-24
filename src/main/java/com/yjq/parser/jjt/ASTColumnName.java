@@ -47,7 +47,7 @@ public class ASTColumnName extends SimpleNode {
                     ASTNumericLiteral numericLiteral = new ASTNumericLiteral();
                     numericLiteral.setIntegerValue(Integer.parseInt(entry.getValue().getValue()));
                     data.setNumericLiteral(numericLiteral);
-                } else if (type.equalsIgnoreCase("varchar")) {
+                } else if (type.equalsIgnoreCase("char")) {
                     ASTStringLiteral stringLiteral = new ASTStringLiteral();
                     stringLiteral.setValue(entry.getValue().getValue());
                     data.setStringLiteral(stringLiteral);
