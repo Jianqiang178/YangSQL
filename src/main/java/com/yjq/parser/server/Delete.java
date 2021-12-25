@@ -20,7 +20,7 @@ public class Delete {
         String tableName = deleteStmt.getTableName().getName();
         Table table = CreateAndInsert.readTableMeta(db, tableName);
         Map<String, Integer> integerMap = table.getHeads().values().stream().collect(Collectors.toMap(Head::getName, Head::getIndex));
-        List<List<GridData>> result = Select.readTable(db, tableName, null);
+        List<List<GridData>> result = Select.readTable(db, tableName, deleteStmt.getTableName().getName());
         List<List<GridData>> deleteRows = new ArrayList<>();
         for (int i = 0; i < result.size(); i++) {
             boolean delete = true;

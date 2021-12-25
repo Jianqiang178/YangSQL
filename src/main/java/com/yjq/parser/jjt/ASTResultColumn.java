@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.lang.ref.PhantomReference;
+
 @Data
 public class ASTResultColumn extends SimpleNode {
     private String childName;
@@ -14,7 +15,7 @@ public class ASTResultColumn extends SimpleNode {
     private ASTTableName tableName;
     private ASTColumnName columnName;
     private ASTFunction function;
-    private Boolean haveAlias;
+    private Boolean haveAlias = false;
     private String alias;
 
     public ASTResultColumn(int id) {
@@ -30,30 +31,19 @@ public class ASTResultColumn extends SimpleNode {
      * Accept the visitor.
      **/
     public Object jjtAccept(SQLParserVisitor visitor, Object data) {
-
         return visitor.visit(this, data);
     }
 
-    /**
-     * resultColumn有且仅有一个子节点
-     */
-//    public void getResultColumn() {
-//        if (children.length == 0) {
-//            System.out.println("ResultColumn have no children");
-//            return;
-//        }
-//        SimpleNode child = (SimpleNode) children[0];
-//        this.childName = child.getName();
-//        if (child.getName().equals("ColumnName")) {
-//            columnName = (ASTColumnName) child;
-//            type = 1;
-//        } else if (child.getName().equals("TableName")) {
-//            columnName = (ASTColumnName) child;
-//            type = 2;
-//        } else if (child.getName().equals("Function")) {
-//            columnName = (ASTColumnName) child;
-//        }
-//
-//    }
+    public String getAlias() {
+        if (haveAlias) {
+            return alias;
+        } else {
+            return getNameWithTable();
+        }
+    }
+
+    public String getNameWithTable() {
+        return columnName.getNameWithTable();
+    }
 }
 /* JavaCC - OriginalChecksum=7f5bab010b7d8e2aa3b06bd5a98d572a (do not edit this line) */

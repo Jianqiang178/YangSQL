@@ -25,8 +25,7 @@ public class ASTConstraint extends SimpleNode implements Serializable {
      **/
     public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-        return
-                visitor.visit(this, data);
+        return visitor.visit(this, data);
     }
 }
 /* JavaCC - OriginalChecksum=71b7a56d52795aeb55cb8b4713d9a5ab (do not edit this line) */

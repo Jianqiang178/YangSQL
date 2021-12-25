@@ -82,19 +82,64 @@ public class CreateAndInsert {
             columns = table.getHeads().values().stream().sorted(Comparator.comparing(Head::getIndex)).map(Head::getName).collect(Collectors.toList());
         } else {
             columns = insertStmt.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
+            // 验证不能为空的列
+            validPrimaryKeyAndNotNull(table, columns);
         }
         List<String> values = insertStmt.getDataList().getDataList().stream().map(ASTData::getValue).collect(Collectors.toList());
-        assert values.size() == columns.size();
+        if (values.size() != columns.size()) {
+            throw new YangSQLException("参数不匹配");
+        }
+        Map<String, String> insertData = generateValueMap(table, columns, insertStmt.getDataList().getDataList());
+        String data = generateData(db, table, columns, insertData);
+        String path = getDataPath(db, table.getName());
+        appendContent(path, data, true);
+    }
+
+    /**
+     * 是否有主键和not null
+     *
+     * @param table
+     * @param columns
+     * @throws YangSQLException
+     */
+    public static void validPrimaryKeyAndNotNull(Table table, List<String> columns) throws YangSQLException {
+        for (Head value : table.getHeads().values()) {
+            if (value.getCons().contains(2)) {
+                if (!columns.contains(value.getName())) {
+                    throw new YangSQLException("'" + value.getName() + "'" + "为主键，不能为空");
+                }
+            } else if (value.getCons().contains(1)) {
+                if (!columns.contains(value.getName())) {
+                    throw new YangSQLException("'" + value.getName() + "'" + "不能为空");
+                }
+            }
+        }
+    }
+
+    /**
+     * 验证插入参数
+     *
+     * @param table
+     * @param columns
+     * @param dataList
+     * @return
+     * @throws YangSQLException
+     */
+    public static Map<String, String> generateValueMap(Table table, List<String> columns, List<ASTData> dataList) throws YangSQLException {
         Map<String, String> insertData = new HashMap<>();
         for (int i = 0; i < columns.size(); i++) {
             if (table.getHeads().get(columns.get(i)) == null) {
-                throw new YangSQLException("'" + columns.get(i) + "'" + "列不存在");
+                throw new YangSQLException("Unknown column : '" + columns.get(i) + "'");
             }
-            if (table.getHeads().get(columns.get(i)).getType() != insertStmt.getDataList().getDataList().get(i).getType()) {
+            if (table.getHeads().get(columns.get(i)).getType() != dataList.get(i).getType()) {
                 throw new YangSQLException("'" + columns.get(i) + "'" + "列数据格式不匹配");
             }
-            insertData.put(columns.get(i), insertStmt.getDataList().getDataList().get(i).getValue());
+            insertData.put(columns.get(i), dataList.get(i).getValue());
         }
+        return insertData;
+    }
+
+    public static String generateData(String db, Table table, List<String> columns, Map<String, String> insertData) throws YangSQLException {
         StringBuilder data = new StringBuilder();
         for (String s : columns) {
             Head head = table.getHeads().get(s);
@@ -102,10 +147,10 @@ public class CreateAndInsert {
             if (insertData.get(s) != null) {
                 if (types.contains(3)) {
                     ASTConstraint constraint = head.getConsByType(3);
-                    if (Select.exitDataOneLine(db, constraint.getTableName().getName(), constraint.getColumnName().getName(), insertData.get(s))) {
+                    if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), constraint.getColumnName().getName(), insertData.get(s))) {
                         throw new YangSQLException(s + "列约束：外键" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")不存在" + insertData.get(s));
                     }
-                } else if (types.contains(4)) {
+                } else if (types.contains(4) || types.contains(1)) {
                     if (Select.exitDataOneLine(db, table.getName(), s, insertData.get(s))) {
                         throw new YangSQLException(s + "列约束：值必须唯一，表中已存在" + insertData.get(s));
                     }
@@ -119,8 +164,7 @@ public class CreateAndInsert {
             data.append("\t");
         }
         data.append("\n");
-        String path = getDataPath(db, table.getName());
-        appendContent(path, data.toString(), true);
+        return data.toString();
     }
 
     /**
@@ -143,8 +187,11 @@ public class CreateAndInsert {
             // 是否存在外键约束
             if (head.getCons().contains(3)) {
                 ASTConstraint constraint = head.getConsByType(3);
+                if (!new File(getMetaPath(db, constraint.getTableName().getName())).exists()) {
+                    throw new YangSQLException(head.getName() + "列外键创建失败, Unknown table : " + constraint.getTableName().getName());
+                }
                 Head head1 = getHead(db, constraint.getTableName().getName(), constraint.getColumnName().getName());
-                if (head1 == null || head1.getDataType().equals(head.getDataType())) {
+                if (head1 == null || !head1.getDataType().equals(head.getDataType())) {
                     throw new YangSQLException(head.getName() + "列外键创建失败" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")不存在或数据类型不一样");
                 }
             }

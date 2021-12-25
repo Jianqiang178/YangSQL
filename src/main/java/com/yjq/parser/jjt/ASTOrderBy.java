@@ -4,9 +4,11 @@ package com.yjq.parser.jjt;
 
 import com.sun.org.apache.bcel.internal.generic.ARETURN;
 import com.yjq.parser.data.GridData;
+import com.yjq.parser.data.Head;
 import lombok.Data;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 public class ASTOrderBy extends SimpleNode {
@@ -30,47 +32,54 @@ public class ASTOrderBy extends SimpleNode {
      **/
     public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-        return
-                visitor.visit(this, data);
+        return visitor.visit(this, data);
     }
 
-    public void sort(List<List<GridData>> result, Map<String, Integer> integerMap, List<String> c) {
-        result.sort(new Comparator<List<GridData>>() {
-            @Override
-            public int compare(List<GridData> o1, List<GridData> o2) {
-                for (String s : c) {
-                    int index = integerMap.get(s);
-                    if (o1.get(index) == null || o1.get(index).getValue() == null) {
-                        if (isNulls()) {
-                            if (isNullFirst()) {
-                                return 1;
-                            } else if (isNullLast()) {
+    public void sort(List<List<GridData>> result, List<ASTColumnName> c) {
+        if (result.size() > 0) {
+            List<GridData> line = result.get(0);
+            Map<String, Integer> integerMap = new HashMap<>();
+            for (int i = 0; i < line.size(); i++) {
+                integerMap.put(line.get(i).getNameWithTable(), i);
+            }
+            result.sort(new Comparator<List<GridData>>() {
+                @Override
+                public int compare(List<GridData> o1, List<GridData> o2) {
+                    for (ASTColumnName columnName : c) {
+                        String s = columnName.getNameWithTable();
+                        int index = integerMap.get(s);
+                        if (o1.get(index) == null || o1.get(index).getValue() == null) {
+                            if (isNulls()) {
+                                if (isNullFirst()) {
+                                    return 1;
+                                } else if (isNullLast()) {
+                                    return -1;
+                                }
+                            } else {
+                                return -1;
+                            }
+                        } else if (o2.get(index) == null || o2.get(index).getValue() == null) {
+                            if (isNulls()) {
+                                if (isNullFirst()) {
+                                    return 1;
+                                } else if (isNullLast()) {
+                                    return -1;
+                                }
+                            } else {
                                 return -1;
                             }
                         } else {
-                            return -1;
-                        }
-                    } else if (o2.get(index) == null || o2.get(index).getValue() == null) {
-                        if (isNulls()) {
-                            if (isNullFirst()) {
-                                return 1;
-                            } else if (isNullLast()) {
-                                return -1;
+                            if (asc) {
+                                return o1.get(index).getValue().compareTo(o2.get(index).getValue());
+                            } else {
+                                return o2.get(index).getValue().compareTo(o1.get(index).getValue());
                             }
-                        } else {
-                            return -1;
-                        }
-                    } else {
-                        if (asc) {
-                            return o1.get(index).getValue().compareTo(o2.get(index).getValue());
-                        } else {
-                            return o2.get(index).getValue().compareTo(o1.get(index).getValue());
                         }
                     }
+                    return 1;
                 }
-                return 1;
-            }
-        });
+            });
+        }
     }
 }
 /* JavaCC - OriginalChecksum=cfac3f6d05ad022425707cfb2f9f5588 (do not edit this line) */

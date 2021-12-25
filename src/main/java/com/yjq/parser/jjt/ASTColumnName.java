@@ -6,10 +6,12 @@ import com.yjq.parser.data.GridData;
 import com.yjq.parser.exceptions.YangSQLException;
 import lombok.Data;
 
+import java.io.Serializable;
+import java.util.Locale;
 import java.util.Map;
 
 @Data
-public class ASTColumnName extends SimpleNode {
+public class ASTColumnName extends SimpleNode implements Serializable {
     private String name = null;
     private Boolean haveTable = null;
     private String tableName = null;
@@ -30,6 +32,16 @@ public class ASTColumnName extends SimpleNode {
         return visitor.visit(this, data);
     }
 
+    public String getNameWithTable() {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (tableName != null) {
+            stringBuilder.append(tableName);
+            stringBuilder.append(".");
+        }
+        stringBuilder.append(name);
+        return stringBuilder.toString();
+    }
+
     /**
      * 设置值
      *
@@ -39,7 +51,7 @@ public class ASTColumnName extends SimpleNode {
         boolean find = false;
         for (Map.Entry<String, GridData> entry : dataMap.entrySet()) {
 //            System.out.println("key = " + entry.getKey() + ", value = " + entry.getValue());
-            if (entry.getKey().equals(name)) {
+            if (entry.getKey().equals(getNameWithTable())) {
                 ASTValue value1 = new ASTValue();
                 ASTData data = new ASTData();
                 String type = entry.getValue().getDataType();
@@ -61,9 +73,9 @@ public class ASTColumnName extends SimpleNode {
                 break;
             }
         }
-        if(!find){
+        if (!find) {
             // TODO 若未找到数据，说明SQL语句列指定错误
-            throw new YangSQLException("条件错误");
+            throw new YangSQLException("Unknown column : " + getNameWithTable());
         }
     }
 }

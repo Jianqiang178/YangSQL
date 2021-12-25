@@ -4,8 +4,10 @@ package com.yjq.parser.jjt;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 @Data
-public class ASTTableName extends SimpleNode {
+public class ASTTableName extends SimpleNode implements Serializable {
   private String name;
   private Boolean havaDb = false;
   private String dbName;

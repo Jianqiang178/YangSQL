@@ -8,9 +8,11 @@ PARSER_BEGIN(SQLParser)
 package com.yjq.parser.jjt;
 
 import com.sun.org.apache.bcel.internal.generic.ARETURN;
+import com.yjq.parser.exceptions.YangSQLException;
 import com.yjq.parser.jjt.*;
 import com.yjq.parser.operator.*;
 import com.yjq.parser.server.*;
+import java.util.Arrays;
 public class SQLParser/*@bgen(jjtree)*/implements SQLParserTreeConstants/*@egen*/{/*@bgen(jjtree)*/
   protected JJTSQLParserState jjtree = new JJTSQLParserState();
 
@@ -18,24 +20,22 @@ public class SQLParser/*@bgen(jjtree)*/implements SQLParserTreeConstants/*@egen*
     public static void main(String args[]) {
         CreateAndInsert.initDb();
         System.out.println("Reading from standard input...");
-        SQLParser p = new SQLParser(System.in);
-        try {
-            while (true){
-                try{
-                    System.out.print("YangSQL > ");
-                    SimpleNode n = p.Start();
-                    n.getStatement().exec();
-    //                n.dump("");
+        while (true){
+            try{
+                SQLParser p = new SQLParser(System.in);
+                System.out.print("YangSQL > ");
+                SimpleNode n = p.Start();
+                n.getStatement().exec();
+//                    n.dump("");
 //                    System.out.println("");
-                }catch(Exception e){
-                    System.out.println(e.getMessage());
+            }catch (ParseException e){
+                System.out.println("Error: " + "have an error in SQL syntax near '" + e.currentToken +"'");
+            }catch (YangSQLException e){
+                System.out.println("Error: " + e.getMessage());
+            }catch (Exception e){
+                System.out.println(e.getMessage());
 //                    e.printStackTrace();
-                }
             }
-        } catch (Exception e) {
-          System.out.println("Oops.");
-          System.out.println(e.getMessage());
-          e.printStackTrace();
         }
     }}
 PARSER_END(SQLParser)/*\u7039\u6c2b\u7b9f\u7487\u5d86\u7876\u9352\u55d8\u703d*/
@@ -168,18 +168,12 @@ ASTColumnName ColumnName():{/*@bgen(jjtree) ColumnName */
 {/*@bgen(jjtree) ColumnName */
     try {
 /*@egen*/
-    t = <IDENTIFIER>/*@bgen(jjtree)*/
-                    {
-                      jjtree.closeNodeScope(jjtn000, true);
-                      jjtc000 = false;
-                    }
-/*@egen*/{jjtn000.setName(t.image);return jjtn000;}
-    | LOOKAHEAD(2)t = <IDENTIFIER>{jjtn000.setTableName(t.image);jjtn000.setHaveTable(true);} <DOT> y = <IDENTIFIER>/*@bgen(jjtree)*/
-                                                                                                                    {
-                                                                                                                      jjtree.closeNodeScope(jjtn000, true);
-                                                                                                                      jjtc000 = false;
-                                                                                                                    }
-/*@egen*/{jjtn000.setName(y.image);return jjtn000;}/*@bgen(jjtree)*/
+    t = <IDENTIFIER>{jjtn000.setName(t.image);} [<DOT> y = <IDENTIFIER>{jjtn000.setName(y.image);jjtn000.setTableName(t.image);jjtn000.setHaveTable(true);}]/*@bgen(jjtree)*/
+                                                                                                                                                            {
+                                                                                                                                                              jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                                                              jjtc000 = false;
+                                                                                                                                                            }
+/*@egen*/{return jjtn000;}/*@bgen(jjtree)*/
     } finally {
       if (jjtc000) {
         jjtree.closeNodeScope(jjtn000, true);
@@ -1164,13 +1158,13 @@ ASTResult Result():
              jjtree.closeNodeScope(jjtn000, true);
              jjtc000 = false;
            }
-/*@egen*/{jjtn000.setAll(true);return jjtn000;} | astResultColumn = ResultColumn(){jjtn000.getResultColumns().add(astResultColumn);}
-    [(<COMMA>astResultColumn = ResultColumn(){jjtn000.getResultColumns().add(astResultColumn);})+]/*@bgen(jjtree)*/
-                                                                                                  {
-                                                                                                    jjtree.closeNodeScope(jjtn000, true);
-                                                                                                    jjtc000 = false;
-                                                                                                  }
-/*@egen*/{return jjtn000;}/*@bgen(jjtree)*/
+/*@egen*/{jjtn000.setAll(true);return jjtn000;}
+    | (astResultColumn = ResultColumn(){jjtn000.getResultColumns().add(astResultColumn);}[(<COMMA>astResultColumn = ResultColumn(){jjtn000.getResultColumns().add(astResultColumn);})+]/*@bgen(jjtree)*/
+                                                                                                                                                                                       {
+                                                                                                                                                                                         jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                                                                                         jjtc000 = false;
+                                                                                                                                                                                       }
+/*@egen*/{return jjtn000;})/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);

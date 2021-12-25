@@ -6,23 +6,32 @@ import lombok.Data;
 
 @Data
 public class ASTFromTable extends SimpleNode {
-  private ASTTableName tableName;
-  private Boolean havaAlias;
-  private String alias;
-  public ASTFromTable(int id) {
-    super(id);
-  }
+    private ASTTableName tableName = null;
+    private Boolean havaAlias = false;
+    private String alias = null;
 
-  public ASTFromTable(SQLParser p, int id) {
-    super(p, id);
-  }
+    public ASTFromTable(int id) {
+        super(id);
+    }
 
+    public ASTFromTable(SQLParser p, int id) {
+        super(p, id);
+    }
 
-  /** Accept the visitor. **/
-  public Object jjtAccept(SQLParserVisitor visitor, Object data) {
+    public String getAlias() {
+        if (havaAlias) {
+            return alias;
+        } else {
+            return tableName.getName();
+        }
+    }
 
-    return
-    visitor.visit(this, data);
-  }
+    /**
+     * Accept the visitor.
+     **/
+    public Object jjtAccept(SQLParserVisitor visitor, Object data) {
+
+        return visitor.visit(this, data);
+    }
 }
 /* JavaCC - OriginalChecksum=7939733e0a09927fef9dfeb1dc6c50ae (do not edit this line) */
