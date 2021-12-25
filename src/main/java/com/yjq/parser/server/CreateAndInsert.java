@@ -93,6 +93,7 @@ public class CreateAndInsert {
         String data = generateData(db, table, columns, insertData);
         String path = getDataPath(db, table.getName());
         appendContent(path, data, true);
+        System.out.println("Insert OK, 1 row affected");
     }
 
     /**
@@ -106,11 +107,13 @@ public class CreateAndInsert {
         for (Head value : table.getHeads().values()) {
             if (value.getCons().contains(2)) {
                 if (!columns.contains(value.getName())) {
-                    throw new YangSQLException("'" + value.getName() + "'" + "为主键，不能为空");
+                    String message = "Field '" + value.getName() + "' doesn't have a default value";
+                    throw new YangSQLException(message);
                 }
             } else if (value.getCons().contains(1)) {
                 if (!columns.contains(value.getName())) {
-                    throw new YangSQLException("'" + value.getName() + "'" + "不能为空");
+                    String message = "Field '" + value.getName() + "' doesn't have a default value";
+                    throw new YangSQLException(message);
                 }
             }
         }
@@ -132,7 +135,7 @@ public class CreateAndInsert {
                 throw new YangSQLException("Unknown column : '" + columns.get(i) + "'");
             }
             if (table.getHeads().get(columns.get(i)).getType() != dataList.get(i).getType()) {
-                throw new YangSQLException("'" + columns.get(i) + "'" + "列数据格式不匹配");
+                throw new YangSQLException("Column '" + columns.get(i) + "'" + " requires " + table.getHeads().get(columns.get(i)).getDataType() + " type data");
             }
             insertData.put(columns.get(i), dataList.get(i).getValue());
         }
@@ -150,15 +153,22 @@ public class CreateAndInsert {
                     if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), constraint.getColumnName().getName(), insertData.get(s))) {
                         throw new YangSQLException(s + "列约束：外键" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")不存在" + insertData.get(s));
                     }
-                } else if (types.contains(4) || types.contains(1)) {
+                } else if (types.contains(4) || types.contains(2)) {
                     if (Select.exitDataOneLine(db, table.getName(), s, insertData.get(s))) {
-                        throw new YangSQLException(s + "列约束：值必须唯一，表中已存在" + insertData.get(s));
+                        String message = "";
+                        if (types.contains((2))) {
+                            message = "Duplicate entry '" + insertData.get(s).toString() + "' for key '" + table.getName() + ".PRIMARY'";
+                        } else {
+                            message = "Duplicate entry '" + insertData.get(s).toString() + "' for key '" + table.getName() + "." + s + "'";
+                        }
+                        throw new YangSQLException(message);
                     }
                 }
                 data.append(insertData.get(s));
             } else {
                 if (types.contains(1) || types.contains(2)) {
-                    throw new YangSQLException(s + "列约束：不能为空");
+                    String message = "Field '" + s + "' doesn't have a default value";
+                    throw new YangSQLException(message);
                 }
             }
             data.append("\t");
@@ -182,7 +192,7 @@ public class CreateAndInsert {
             // 约束是否重复
             List<Integer> integers = head.getCons();
             if (integers.size() != integers.stream().distinct().count()) {
-                throw new YangSQLException(head.getName() + "列约束重复");
+                throw new YangSQLException("Constraints for column '" + head.getName() + "' is repeated");
             }
             // 是否存在外键约束
             if (head.getCons().contains(3)) {
@@ -192,7 +202,7 @@ public class CreateAndInsert {
                 }
                 Head head1 = getHead(db, constraint.getTableName().getName(), constraint.getColumnName().getName());
                 if (head1 == null || !head1.getDataType().equals(head.getDataType())) {
-                    throw new YangSQLException(head.getName() + "列外键创建失败" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")不存在或数据类型不一样");
+                    throw new YangSQLException(head.getName() + "列外键创建失败" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")数据类型不一样");
                 }
             }
         }
@@ -204,6 +214,7 @@ public class CreateAndInsert {
             e.printStackTrace();
             throw new YangSQLException("文件读写异常");
         }
+        System.out.println("Create OK, 0 row affected");
     }
 
     /**

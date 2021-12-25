@@ -19,6 +19,7 @@ public class Delete {
     public static void dealDeleteStmt(String db, ASTDeleteStmt deleteStmt) throws YangSQLException {
         String tableName = deleteStmt.getTableName().getName();
         Table table = CreateAndInsert.readTableMeta(db, tableName);
+        int count = 0;
         Map<String, Integer> integerMap = table.getHeads().values().stream().collect(Collectors.toMap(Head::getName, Head::getIndex));
         List<List<GridData>> result = Select.readTable(db, tableName, deleteStmt.getTableName().getName());
         List<List<GridData>> deleteRows = new ArrayList<>();
@@ -33,9 +34,11 @@ public class Delete {
             }
             if (delete) {
                 deleteRows.add(result.get(i));
+                count++;
             }
         }
         result.removeAll(deleteRows);
         Update.reWrite(db, tableName, result);
+        System.out.println("Delete OK, " + String.valueOf(count) + " row affected");
     }
 }

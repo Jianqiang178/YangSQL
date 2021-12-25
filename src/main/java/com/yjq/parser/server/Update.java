@@ -23,6 +23,7 @@ public class Update {
     public static void dealUpdateStmt(String db, ASTUpdateStmt updateStmt) throws YangSQLException {
         String tableName = updateStmt.getTableName().getName();
         Table table = CreateAndInsert.readTableMeta(db, tableName);
+        int count = 0;
         Map<String, Integer> integerMap = table.getHeads().values().stream().collect(Collectors.toMap(Head::getName, Head::getIndex));
         Map<String, String> values = updateStmt.getSetList().getUpdateValues().stream().collect(Collectors.toMap(x -> x.getColumnName().getName(), x -> x.getData().getValue()));
         List<List<GridData>> result = Select.readTable(db, tableName, null);
@@ -40,9 +41,11 @@ public class Update {
                 values.forEach((key, value) -> {
                     result.get(index).get(integerMap.get(key)).setValue(value);
                 });
+                count++;
             }
         }
         reWrite(db, tableName, result);
+        System.out.println("Update OK, " + String.valueOf(count) + " row affected");
     }
 
     public static void reWrite(String db, String tableName, List<List<GridData>> data) {
