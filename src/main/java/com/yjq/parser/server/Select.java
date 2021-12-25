@@ -8,6 +8,9 @@ import com.yjq.parser.jjt.ASTColumnName;
 import com.yjq.parser.jjt.ASTFromTable;
 import com.yjq.parser.jjt.ASTResultColumn;
 import com.yjq.parser.jjt.ASTSelectStmt;
+import com.yjq.parser.utils.ConsoleTable;
+import com.yjq.parser.utils.TableUtils;
+import io.bretty.console.table.Alignment;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -297,27 +300,38 @@ public class Select {
                 integerMap.put(line.get(i).getNameWithTable(), i);
                 integerMap.put(line.get(i).getColumnName(), i);
             }
+            List<String> header = new ArrayList<>();
             if (columns.size() == 0) {
                 for (GridData gridData : line) {
-                    System.out.print(gridData.getColumnName() + "\t");
+//                    System.out.print(gridData.getColumnName() + "\t");
+                    header.add(gridData.getColumnName());
                 }
             } else {
                 Map<String, String> columnNameMap = columns.stream().collect(Collectors.toMap(ASTResultColumn::getNameWithTable, ASTResultColumn::getAlias));
-                columns.forEach(head -> System.out.print(columnNameMap.get(head.getColumnName().getNameWithTable()) + "\t"));
+                columns.forEach(head -> {
+                    header.add(columnNameMap.get(head.getColumnName().getNameWithTable()));
+//                    System.out.print(columnNameMap.get(head.getColumnName().getNameWithTable()) + "\t");
+                });
             }
-            System.out.println();
+            ConsoleTable table = new ConsoleTable(ConsoleTable.toArray(header));
+//            System.out.println();
             for (List<GridData> datum : data) {
+                List<String> temp = new ArrayList<>();
                 if (columns.size() > 0) {
                     for (ASTResultColumn column : columns) {
-                        System.out.print(datum.get(integerMap.get(column.getColumnName().getNameWithTable())).getValue() + "\t");
+//                        System.out.print(datum.get(integerMap.get(column.getColumnName().getNameWithTable())).getValue() + "\t");
+                        temp.add(datum.get(integerMap.get(column.getColumnName().getNameWithTable())).getValue());
                     }
                 } else {
                     for (GridData gridData : datum) {
-                        System.out.print(gridData.getValue() + "\t");
+//                        System.out.print(gridData.getValue() + "\t");
+                        temp.add(gridData.getValue());
                     }
                 }
-                System.out.println();
+//                System.out.println();
+                table.addRow(ConsoleTable.toArray(temp));
             }
+            table.show();
         }
         System.out.println(data.size() + " rows in set");
     }

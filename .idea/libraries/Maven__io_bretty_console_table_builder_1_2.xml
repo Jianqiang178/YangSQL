@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: io.bretty:console-table-builder:1.2">
+    <CLASSES>
+      <root url="jar://D:/Program Files/apache-maven-3.8.1/repository/io/bretty/console-table-builder/1.2/console-table-builder-1.2.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://D:/Program Files/apache-maven-3.8.1/repository/io/bretty/console-table-builder/1.2/console-table-builder-1.2-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://D:/Program Files/apache-maven-3.8.1/repository/io/bretty/console-table-builder/1.2/console-table-builder-1.2-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
