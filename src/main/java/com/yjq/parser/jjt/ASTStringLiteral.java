@@ -26,8 +26,7 @@ public class ASTStringLiteral extends SimpleNode {
      **/
     public Object jjtAccept(SQLParserVisitor visitor, Object data) {
 
-        return
-                visitor.visit(this, data);
+        return visitor.visit(this, data);
     }
 }
 /* JavaCC - OriginalChecksum=c79d44a06004ce35562c0898940f7fab (do not edit this line) */

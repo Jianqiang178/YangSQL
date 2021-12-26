@@ -7,10 +7,7 @@ import com.yjq.parser.jjt.*;
 import com.yjq.parser.utils.YmlUtils;
 
 import java.io.*;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -187,7 +184,17 @@ public class CreateAndInsert {
     public static void dealCreateStmt(String db, ASTCreateStmt createStmt) throws YangSQLException {
         Table table = new Table();
         table.setName(createStmt.getTableName());
-        List<Head> heads = createStmt.getColList().getFields().stream().map(f -> new Head(f.getIndex(), f.getName(), f.getDataType(), f.getConstraints().getConstraintList())).collect(Collectors.toList());
+        List<Head> heads = new ArrayList<>();
+        for (ASTField field : createStmt.getColList().getFields()) {
+            Head head = new Head();
+            head.setName(field.getName());
+            head.setDataType(field.getDataType());
+            head.setIndex(field.getIndex());
+            if (field.getConstraints() != null) {
+                head.setConstraints(field.getConstraints().getConstraintList());
+            }
+            heads.add(head);
+        }
         for (Head head : heads) {
             // 约束是否重复
             List<Integer> integers = head.getCons();

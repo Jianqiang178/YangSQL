@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,7 +37,9 @@ public class Head implements Serializable {
         if (constraints != null && constraints.size() > 0) {
             return constraints.stream().map(ASTConstraint::getType).collect(Collectors.toList());
         } else {
-            return null;
+            List<Integer> r = new ArrayList<>();
+            r.add(0);
+            return r;
         }
     }
 

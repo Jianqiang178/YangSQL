@@ -9,7 +9,7 @@ public class ASTField extends SimpleNode {
   private Integer index;
   private String dataType;
   private String name;
-  private ASTConstraints constraints;
+  private ASTConstraints constraints = null;
   public ASTField(int id) {
     super(id);
   }

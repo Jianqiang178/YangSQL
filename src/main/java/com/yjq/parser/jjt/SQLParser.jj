@@ -3,6 +3,7 @@
     STATIC = false ;
                   
                    
+    UNICODE_PARSER = true;
 }
 PARSER_BEGIN(SQLParser)
 package com.yjq.parser.jjt;
@@ -40,6 +41,7 @@ public class SQLParser/*@bgen(jjtree)*/implements SQLParserTreeConstants/*@egen*
     }}
 PARSER_END(SQLParser)/*\u7039\u6c2b\u7b9f\u7487\u5d86\u7876\u9352\u55d8\u703d*/
 SKIP:{" "}
+SKIP : {"\t"}
 SKIP:{"\n"|"\r"|"\r\n"}TOKEN:/*\u7039\u6c2b\u7b9f\u934f\u62bd\u656d\u701b\ufffd*/
 { <CREATE:"create">
     | <TABLE:"table">
@@ -133,6 +135,10 @@ TOKEN:/* \u7039\u6c2b\u7b9f\u93cd\u56ea\u7611\u7ed7\ufffd */
     | <LETTER>(<LETTER>| <DIGIT> | <UNDERSCORE>)*(<LETTER>| <DIGIT>)+>
     | <#LETTER:["a"-"z", "A"-"Z"]| <SYMBOL> >
 }/* \u7487\ue15f\u7876\u7459\uff46\u703d*/
+TOKEN : {
+    <#CHARC: <LETTER> | <DIGIT> | ["\u4e00"-"\u9fa5"]>|
+    <STRING: (<CHARC>)+>
+}
 ASTTableName TableName():{/*@bgen(jjtree) TableName */
                           ASTTableName jjtn000 = new ASTTableName(JJTTABLENAME);
                           boolean jjtc000 = true;
@@ -219,11 +225,11 @@ ASTStringLiteral StringLiteral():{/*@bgen(jjtree) StringLiteral */
 {/*@bgen(jjtree) StringLiteral */
     try {
 /*@egen*/
-    <LQUOTATION>t = <IDENTIFIER>{jjtn000.setValue(t.image);}<LQUOTATION>/*@bgen(jjtree)*/
-                                                                        {
-                                                                          jjtree.closeNodeScope(jjtn000, true);
-                                                                          jjtc000 = false;
-                                                                        }
+    <LQUOTATION>(t = <STRING> | t = <IDENTIFIER>) {jjtn000.setValue(t.image);}<LQUOTATION>/*@bgen(jjtree)*/
+                                                                                          {
+                                                                                            jjtree.closeNodeScope(jjtn000, true);
+                                                                                            jjtc000 = false;
+                                                                                          }
 /*@egen*/{return jjtn000;}/*@bgen(jjtree)*/
     } finally {
       if (jjtc000) {

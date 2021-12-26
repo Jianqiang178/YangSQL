@@ -41,6 +41,7 @@ public class ASTOrderBy extends SimpleNode {
             Map<String, Integer> integerMap = new HashMap<>();
             for (int i = 0; i < line.size(); i++) {
                 integerMap.put(line.get(i).getNameWithTable(), i);
+                integerMap.put(line.get(i).getColumnName(), i);
             }
             result.sort(new Comparator<List<GridData>>() {
                 @Override

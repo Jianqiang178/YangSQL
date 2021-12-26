@@ -2,6 +2,7 @@ options {
     STATIC = false ;
     MULTI = true ;
     VISITOR = true;
+    UNICODE_PARSER = true;
 }
 PARSER_BEGIN(SQLParser)
 package com.yjq.parser.jjt;
@@ -36,6 +37,7 @@ public class SQLParser{
     }}
 PARSER_END(SQLParser)/*定义词法分析*/
 SKIP:{" "}
+SKIP : {"\t"}
 SKIP:{"\n"|"\r"|"\r\n"}TOKEN:/*定义关键字*/
 { <CREATE:"create">
     | <TABLE:"table">
@@ -129,6 +131,10 @@ TOKEN:/* 定义标识符 */
     | <LETTER>(<LETTER>| <DIGIT> | <UNDERSCORE>)*(<LETTER>| <DIGIT>)+>
     | <#LETTER:["a"-"z", "A"-"Z"]| <SYMBOL> >
 }/* 语法解析*/
+TOKEN : {
+    <#CHARC: <LETTER> | <DIGIT> | ["\u4e00"-"\u9fa5"]>|
+    <STRING: (<CHARC>)+>
+}
 ASTTableName TableName():{Token t; Token y;}
 {
     t = <IDENTIFIER>{jjtThis.setName(t.image);return jjtThis;}
@@ -144,7 +150,7 @@ void Function():{}
 }
 ASTStringLiteral StringLiteral():{Token t;}
 {
-    <LQUOTATION>t = <IDENTIFIER>{jjtThis.setValue(t.image);}<LQUOTATION>{return jjtThis;}
+    <LQUOTATION>(t = <STRING> | t = <IDENTIFIER>) {jjtThis.setValue(t.image);}<LQUOTATION>{return jjtThis;}
 }
 ASTNumericLiteral NumericLiteral():{Token t;}
 {

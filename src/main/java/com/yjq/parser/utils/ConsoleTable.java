@@ -2,6 +2,8 @@ package com.yjq.parser.utils;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Yang Jianqiang
@@ -14,6 +16,8 @@ public class ConsoleTable {
     private String[][] data;        // matrix containing all data (excluding headers)
     public int spacing = 11;       // spacing between a cell value and the beginning and the end of that cell
     private boolean isHeaders;      // does the table have headers or not
+    public static final String regex = "[\u4e00-\u9fa5]";
+    public static final Pattern p = Pattern.compile(regex);
 
 
     /**
@@ -68,8 +72,9 @@ public class ConsoleTable {
 
         //update max column values
         for (int i = 0; i < row.length; i++) {
-            if (row[i] != null && row[i].length() > maxDataLength[i]) {
-                changeMaxLength(maxDataLength, i, row[i].length());
+//            if (row[i] != null && row[i].length() > maxDataLength[i]) {
+            if (row[i] != null && getConsoleSize(row[i]) > maxDataLength[i]) {
+                changeMaxLength(maxDataLength, i, getConsoleSize(row[i]));
             }
         }
 
@@ -306,5 +311,19 @@ public class ConsoleTable {
             res[i] = list.get(i);
         }
         return res;
+    }
+
+    public static int getConsoleSize(String str) {
+        int count = 0;
+        Matcher m = p.matcher(str);
+        int i = 0;
+        while (i < str.length()) {
+            if (m.find()) {
+                count++;
+            }
+            i++;
+        }
+        int other = str.length() - count;
+        return count * 2 + other;
     }
 }

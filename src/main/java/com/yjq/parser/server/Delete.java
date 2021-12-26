@@ -24,12 +24,12 @@ public class Delete {
         List<List<GridData>> result = Select.readTable(db, tableName, deleteStmt.getTableName().getName());
         List<List<GridData>> deleteRows = new ArrayList<>();
         for (int i = 0; i < result.size(); i++) {
-            boolean delete = true;
+            boolean delete = false;
             if (deleteStmt.getExpression() != null) {
                 Map<String, GridData> dataMap = result.get(i).stream().collect(Collectors.toMap(GridData::getColumnName, t -> t));
                 deleteStmt.getExpression().setColumnValue(dataMap);
-                if (!deleteStmt.getExpression().getOrExpression().result()) {
-                    delete = false;
+                if (deleteStmt.getExpression().getOrExpression().result()) {
+                    delete = true;
                 }
             }
             if (delete) {
