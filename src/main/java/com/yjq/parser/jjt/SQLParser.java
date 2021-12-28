@@ -26,7 +26,7 @@ public class SQLParser/*@bgen(jjtree)*/implements SQLParserTreeConstants, SQLPar
                 System.out.println("Error: " + e.getMessage());
             }catch (Exception e){
                 System.out.println(e.getMessage());
-//                    e.printStackTrace();
+                e.printStackTrace();
             }
         }
     }
@@ -555,7 +555,7 @@ if (jjtc000) {
 }
 
 /**
-* 逻辑-and表达�?
+* 逻辑-and表达�?
 */
   final public ASTAndExpression AndExpression() throws ParseException {/*@bgen(jjtree) AndExpression */
                                   ASTAndExpression jjtn000 = new ASTAndExpression(JJTANDEXPRESSION);
@@ -622,7 +622,7 @@ if (jjtc000) {
 }
 
 /**
-* 逻辑-or表达�?
+* 逻辑-or表达�?
 */
   final public ASTOrExpression OrExpression() throws ParseException {/*@bgen(jjtree) OrExpression */
                                 ASTOrExpression jjtn000 = new ASTOrExpression(JJTOREXPRESSION);
@@ -669,7 +669,7 @@ if (jjtc000) {
 }
 
 /**
-* 空�?�表达式
+* 空�?�表达式
 */
   final public ASTNullExpression NullExpression() throws ParseException {/*@bgen(jjtree) NullExpression */
                                     ASTNullExpression jjtn000 = new ASTNullExpression(JJTNULLEXPRESSION);
@@ -733,7 +733,7 @@ if (jjtc000) {
 }
 
 /**
-* like匹配表达�?
+* like匹配表达�?
 */
   final public ASTLikeExpression LikeExpression() throws ParseException {/*@bgen(jjtree) LikeExpression */
                                     ASTLikeExpression jjtn000 = new ASTLikeExpression(JJTLIKEEXPRESSION);
@@ -780,7 +780,7 @@ if (jjtc000) {
 }
 
 /**
-* in判断表达�?
+* in判断表达�?
 */
   final public ASTInExpression InExpression() throws ParseException {/*@bgen(jjtree) InExpression */
                                 ASTInExpression jjtn000 = new ASTInExpression(JJTINEXPRESSION);
@@ -853,7 +853,7 @@ if (jjtc000) {
 }
 
 /**
-* between表达�?
+* between表达�?
 */
   final public ASTBetweenExpression BetweenExpression() throws ParseException {/*@bgen(jjtree) BetweenExpression */
                                           ASTBetweenExpression jjtn000 = new ASTBetweenExpression(JJTBETWEENEXPRESSION);
@@ -904,7 +904,7 @@ if (jjtc000) {
 }
 
 /**
-* 比较表达�?
+* 比较表达�?
 */
   final public ASTComparisonExpression ComparisonExpression() throws ParseException {/*@bgen(jjtree) ComparisonExpression */
     ASTComparisonExpression jjtn000 = new ASTComparisonExpression(JJTCOMPARISONEXPRESSION);

@@ -106,13 +106,13 @@ public class Update {
         if (table.getConstraints().get(3).size() > 0) {
             constraints = table.getConstraints().get(3);
             for (ASTConstraint constraint : constraints) {
-                List<String> foreignKey = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
-                for (String s : foreignKey) {
-                    Map<Integer, String> target1 = new HashMap<>();
-                    target1.put(table.getHeads().get(s).getIndex(), updateData.get(s));
-                    if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), target1)) {
-                        throw new YangSQLException(s + "列约束：外键" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")不存在" + updateData.get(s));
-                    }
+                String foreignKey = constraint.getForeignKeyColumn().getName();
+                Map<Integer, String> target1 = new HashMap<>();
+                Table foreignTable = CreateAndInsert.readTableMeta(db, constraint.getTableName().getName());
+                target1.put(foreignTable.getHeads().get(constraint.getColumnName().getName()).getIndex(), updateData.get(foreignKey));
+                if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), target1)) {
+                    String message = "Cannot add or update a child row: a foreign key constraint fails ( FOREIGN KEY ('" + foreignKey + "')" + "REFERENCES" + foreignTable.getName() + "('" + constraint.getColumnName().getName() + "')";
+                    throw new YangSQLException(message);
                 }
             }
         }

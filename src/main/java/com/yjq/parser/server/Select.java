@@ -143,7 +143,7 @@ public class Select {
     public static List<GridData> translateLine(Table table, String tableAlias, String line, List<Integer> index) {
         Map<Integer, Head> headMap = table.getHeads().values().stream().collect(Collectors.toMap(Head::getIndex, t -> t));
         List<GridData> gridDataList = new ArrayList<>();
-        String[] strings = line.split("\t");
+        String[] strings = line.split("\t", -1);
         assert strings.length == table.getHeads().size();
         for (Integer integer : index) {
             GridData gridData = new GridData();
@@ -166,13 +166,13 @@ public class Select {
      * @return
      */
     public static Boolean exitDataOneLine(Table table, String line, Integer index, String target) {
-        String[] strings = line.split("\t");
+        String[] strings = line.split("\t", -1);
         assert strings.length == table.getHeads().size();
         return strings[index].equals(target);
     }
 
     public static Boolean exitDataOneLine(Table table, String line, Map<Integer, String> target) {
-        String[] strings = line.split("\t");
+        String[] strings = line.split("\t", -1);
         assert strings.length == table.getHeads().size();
         for (Integer integer : target.keySet()) {
             if (!strings[integer].equals(target.get(integer))) {
@@ -183,7 +183,7 @@ public class Select {
     }
 
     public static Boolean notNullDataOneLine(Table table, String line, List<Integer> index) {
-        String[] strings = line.split("\t");
+        String[] strings = line.split("\t", -1);
         assert strings.length == table.getHeads().size();
         for (Integer integer : index) {
             if (strings[integer] != null || !"".equals(strings[integer])) {

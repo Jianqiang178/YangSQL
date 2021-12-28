@@ -139,7 +139,7 @@ public class CreateAndInsert {
                 throw new YangSQLException("Unknown column : '" + columns.get(i) + "'");
             }
             if (table.getHeads().get(columns.get(i)).getType() != dataList.get(i).getType()) {
-                throw new YangSQLException("Column '" + columns.get(i) + "'" + " requires " + table.getHeads().get(columns.get(i)).getDataType() + " type data");
+                throw new YangSQLException("Incorrect " + table.getHeads().get(columns.get(i)).getType() + " value: '" + dataList.get(i).getValue() + "' for column '" + columns.get(i) + "'");
             }
             insertData.put(columns.get(i), dataList.get(i).getValue());
         }
@@ -190,13 +190,13 @@ public class CreateAndInsert {
         if (table.getConstraints().get(3).size() > 0) {
             constraints = table.getConstraints().get(3);
             for (ASTConstraint constraint : constraints) {
-                List<String> foreignKey = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
-                for (String s : foreignKey) {
-                    Map<Integer, String> target = new HashMap<>();
-                    target.put(table.getHeads().get(s).getIndex(), insertData.get(s));
-                    if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), target)) {
-                        throw new YangSQLException(s + "列约束：外键" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")不存在" + insertData.get(s));
-                    }
+                String foreignKey = constraint.getForeignKeyColumn().getName();
+                Map<Integer, String> target1 = new HashMap<>();
+                Table foreignTable = CreateAndInsert.readTableMeta(db, constraint.getTableName().getName());
+                target1.put(foreignTable.getHeads().get(constraint.getColumnName().getName()).getIndex(), insertData.get(foreignKey));
+                if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), target1)) {
+                    String message = "Cannot add or update a child row: a foreign key constraint fails ( FOREIGN KEY ('" + foreignKey + "')" + "REFERENCES" + foreignTable.getName() + "('" + constraint.getColumnName().getName() + "')";
+                    throw new YangSQLException(message);
                 }
             }
         }
@@ -255,7 +255,7 @@ public class CreateAndInsert {
         Map<String, Head> headMap = heads.stream().collect(Collectors.toMap(Head::getName, t -> t));
         for (ASTConstraint constraint : constraintList) {
             Head head = headMap.get(constraint.getForeignKeyColumn().getName());
-            if (constraint.getTableName().getName().equals(table.getName())) {
+            if (constraint.getTableName() == null || constraint.getTableName().getName().equals(table.getName())) {
                 // 外键在本表中
                 boolean exist = false;
                 for (Head head1 : heads) {
@@ -265,15 +265,20 @@ public class CreateAndInsert {
                     }
                 }
                 if (!exist) {
-                    throw new YangSQLException(head.getName() + "列外键创建失败, Unknown table : " + constraint.getTableName().getName());
+                    String message = "Failed to add the foreign key constraint. Missing column '" + constraint.getColumnName().getName() + "'";
+                    throw new YangSQLException(message);
                 }
             } else if (!new File(getMetaPath(db, constraint.getTableName().getName())).exists()) {
-                throw new YangSQLException(head.getName() + "列外键创建失败, Unknown table : " + constraint.getTableName().getName());
+                throw new YangSQLException(head.getName() + "Unknown table : " + constraint.getTableName().getName());
             } else {
                 // 外表查找外键
                 Head head1 = getHead(db, constraint.getTableName().getName(), constraint.getColumnName().getName());
-                if (head1 == null || !head1.getDataType().equals(head.getDataType())) {
-                    throw new YangSQLException(head.getName() + "列外键创建失败" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")数据类型不一样");
+                if (head1 == null) {
+                    String message = "Failed to add the foreign key constraint. Missing column '" + constraint.getColumnName().getName() + "' for constraint in the referenced table '" + constraint.getTableName().getName() + "'";
+                    throw new YangSQLException(message);
+                } else if (!head1.getDataType().equals(head.getDataType())) {
+                    String message = "Referencing column '" + head.getName() + "' and referenced column '+" + constraint.getColumnName().getName() + "' in foreign key constraint are incompatible.";
+                    throw new YangSQLException(message);
                 }
             }
         }
