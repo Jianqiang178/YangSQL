@@ -4,15 +4,14 @@ import com.yjq.parser.data.GridData;
 import com.yjq.parser.data.Head;
 import com.yjq.parser.data.Table;
 import com.yjq.parser.exceptions.YangSQLException;
-import com.yjq.parser.jjt.ASTConstraint;
-import com.yjq.parser.jjt.ASTData;
-import com.yjq.parser.jjt.ASTUpdateStmt;
-import com.yjq.parser.jjt.ASTUpdateValue;
+import com.yjq.parser.jjt.*;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,7 +38,6 @@ public class Update {
                 updateStmt.getExpression().setColumnValue(dataMap);
                 if (updateStmt.getExpression().getOrExpression().result()) {
                     // 判断外键和唯一约束
-                    validUpdateCons(db, table, column, values);
                     update = true;
                 }
             }
@@ -47,6 +45,7 @@ public class Update {
                 values.forEach((key, value) -> {
                     result.get(index).get(integerMap.get(key)).setValue(value);
                 });
+                validUpdateCons(db, table, result.get(index), values);
                 count++;
             }
         }
@@ -56,40 +55,94 @@ public class Update {
 
     /**
      * 验证更新约束
+     *
      * @param db
      * @param table
-     * @param columns
-     * @param insertData
      * @throws YangSQLException
      */
-    public static void validUpdateCons(String db, Table table, List<String> columns, Map<String, String> insertData) throws YangSQLException {
-        for (String s : columns) {
-            Head head = table.getHeads().get(s);
-            List<Integer> types = head.getCons();
-            if (insertData.get(s) != null) {
-                if (types.contains(3)) {
-                    ASTConstraint constraint = head.getConsByType(3);
-                    if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), constraint.getColumnName().getName(), insertData.get(s))) {
-                        throw new YangSQLException(s + "列约束：外键" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")不存在" + insertData.get(s));
-                    }
-                } else if (types.contains(4) || types.contains(2)) {
-                    if (Select.exitDataOneLine(db, table.getName(), s, insertData.get(s))) {
-                        String message = "";
-                        if (types.contains((2))) {
-                            message = "Duplicate entry '" + insertData.get(s).toString() + "' for key '" + table.getName() + ".PRIMARY'";
-                        } else {
-                            message = "Duplicate entry '" + insertData.get(s).toString() + "' for key '" + table.getName() + "." + s + "'";
-                        }
-                        throw new YangSQLException(message);
-                    }
-                }
-            } else {
-                if (types.contains(1) || types.contains(2)) {
-                    String message = "Field '" + s + "' doesn't have a default value";
+    public static void validUpdateCons(String db, Table table, List<GridData> line, Map<String, String> updateData) throws YangSQLException {
+        // 检查主键
+        Map<Integer, String> target = line.stream().collect(Collectors.toMap(GridData::getIndex, GridData::getValue));
+        List<ASTConstraint> constraints = null;
+        if (table.getConstraints().get(2).size() > 0) {
+            constraints = table.getConstraints().get(2);
+            for (ASTConstraint constraint : constraints) {
+                List<String> primary = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
+                if (Select.exitDataOneLine(db, table.getName(), target)) {
+                    String message = "Duplicate entry '(" + String.join(", ", primary) + ")' for key '" + table.getName() + ".PRIMARY'";
                     throw new YangSQLException(message);
                 }
             }
         }
+        // 检查唯一约束
+        if (table.getConstraints().get(4).size() > 0) {
+            constraints = table.getConstraints().get(4);
+            for (ASTConstraint constraint : constraints) {
+                List<String> unique = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
+                if (Select.exitDataOneLine(db, table.getName(), target)) {
+                    String message = "Duplicate entry '(" + String.join(", ", unique) + ")' for key '" + table.getName() + ".UNIQUE'";
+                    throw new YangSQLException(message);
+                }
+            }
+        }
+        // 检查非空约束
+        if (table.getConstraints().get(1).size() > 0) {
+            constraints = table.getConstraints().get(1);
+            for (ASTConstraint constraint : constraints) {
+                List<String> notNull = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
+                for (String s : notNull) {
+                    for (GridData gridData : line) {
+                        if (gridData.getColumnName().equals(s)) {
+                            if (gridData.getValue() == null || "".equals(gridData.getValue())) {
+                                String message = "Field '" + String.join(", ", notNull) + "' doesn't have a default value for key '" + table.getName() + ".NOT NULL'";
+                                throw new YangSQLException(message);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // 检查外键
+        if (table.getConstraints().get(3).size() > 0) {
+            constraints = table.getConstraints().get(3);
+            for (ASTConstraint constraint : constraints) {
+                List<String> foreignKey = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
+                for (String s : foreignKey) {
+                    Map<Integer, String> target1 = new HashMap<>();
+                    target1.put(table.getHeads().get(s).getIndex(), updateData.get(s));
+                    if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), target1)) {
+                        throw new YangSQLException(s + "列约束：外键" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")不存在" + updateData.get(s));
+                    }
+                }
+            }
+        }
+//        for (String s : columns) {
+//            Head head = table.getHeads().get(s);
+//            List<Integer> types = head.getCons();
+//            if (insertData.get(s) != null) {
+//                if (types.contains(3)) {
+//                    ASTConstraint constraint = head.getConsByType(3);
+//                    if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), constraint.getColumnName().getName(), insertData.get(s))) {
+//                        throw new YangSQLException(s + "列约束：外键" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")不存在" + insertData.get(s));
+//                    }
+//                } else if (types.contains(4) || types.contains(2)) {
+//                    if (Select.exitDataOneLine(db, table.getName(), s, insertData.get(s))) {
+//                        String message = "";
+//                        if (types.contains((2))) {
+//                            message = "Duplicate entry '" + insertData.get(s).toString() + "' for key '" + table.getName() + ".PRIMARY'";
+//                        } else {
+//                            message = "Duplicate entry '" + insertData.get(s).toString() + "' for key '" + table.getName() + "." + s + "'";
+//                        }
+//                        throw new YangSQLException(message);
+//                    }
+//                }
+//            } else {
+//                if (types.contains(1) || types.contains(2)) {
+//                    String message = "Field '" + s + "' doesn't have a default value";
+//                    throw new YangSQLException(message);
+//                }
+//            }
+//        }
     }
 
     public static void reWrite(String db, String tableName, List<List<GridData>> data) {

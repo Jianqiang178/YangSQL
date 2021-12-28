@@ -79,17 +79,24 @@ public class CreateAndInsert {
             columns = table.getHeads().values().stream().sorted(Comparator.comparing(Head::getIndex)).map(Head::getName).collect(Collectors.toList());
         } else {
             columns = insertStmt.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
-            // 验证不能为空的列
-            validPrimaryKeyAndNotNull(table, columns);
         }
         List<String> values = insertStmt.getDataList().getDataList().stream().map(ASTData::getValue).collect(Collectors.toList());
         if (values.size() != columns.size()) {
             throw new YangSQLException("参数不匹配");
         }
         Map<String, String> insertData = generateValueMap(table, columns, insertStmt.getDataList().getDataList());
-        String data = generateData(db, table, columns, insertData);
+        checkConstraints(db, table, columns, insertData);
+        List<String> insertColumn = table.getHeads().values().stream().sorted(Comparator.comparing(Head::getIndex)).map(Head::getName).collect(Collectors.toList());
+        StringBuilder data = new StringBuilder();
+        for (String s : insertColumn) {
+            if (insertData.containsKey(s)) {
+                data.append(insertData.get(s));
+            }
+            data.append("\t");
+        }
+        data.append("\n");
         String path = getDataPath(db, table.getName());
-        appendContent(path, data, true);
+        appendContent(path, data.toString(), true);
         System.out.println("Insert OK, 1 row affected");
     }
 
@@ -139,40 +146,139 @@ public class CreateAndInsert {
         return insertData;
     }
 
-    public static String generateData(String db, Table table, List<String> columns, Map<String, String> insertData) throws YangSQLException {
+    public static void checkConstraints(String db, Table table, List<String> columns, Map<String, String> insertData) throws YangSQLException {
         StringBuilder data = new StringBuilder();
-        for (String s : columns) {
-            Head head = table.getHeads().get(s);
-            List<Integer> types = head.getCons();
-            if (insertData.get(s) != null) {
-                if (types.contains(3)) {
-                    ASTConstraint constraint = head.getConsByType(3);
-                    if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), constraint.getColumnName().getName(), insertData.get(s))) {
-                        throw new YangSQLException(s + "列约束：外键" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")不存在" + insertData.get(s));
-                    }
-                } else if (types.contains(4) || types.contains(2)) {
-                    if (Select.exitDataOneLine(db, table.getName(), s, insertData.get(s))) {
-                        String message = "";
-                        if (types.contains((2))) {
-                            message = "Duplicate entry '" + insertData.get(s).toString() + "' for key '" + table.getName() + ".PRIMARY'";
-                        } else {
-                            message = "Duplicate entry '" + insertData.get(s).toString() + "' for key '" + table.getName() + "." + s + "'";
-                        }
-                        throw new YangSQLException(message);
-                    }
-                }
-                data.append(insertData.get(s));
-            } else {
-                if (types.contains(1) || types.contains(2)) {
-                    String message = "Field '" + s + "' doesn't have a default value";
+        // 检查主键
+        List<ASTConstraint> constraints = null;
+        if (table.getConstraints().get(2).size() > 0) {
+            constraints = table.getConstraints().get(2);
+            for (ASTConstraint constraint : constraints) {
+                List<String> primary = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
+                Map<Integer, String> target = primary.stream().collect(Collectors.toMap(x -> table.getHeads().get(x).getIndex(), insertData::get));
+                if (Select.exitDataOneLine(db, table.getName(), target)) {
+                    String message = "Duplicate entry '(" + String.join(", ", primary) + ")' for key '" + table.getName() + ".PRIMARY'";
                     throw new YangSQLException(message);
                 }
             }
-            data.append("\t");
         }
-        data.append("\n");
-        return data.toString();
+        // 检查唯一约束
+        if (table.getConstraints().get(4).size() > 0) {
+            constraints = table.getConstraints().get(4);
+            for (ASTConstraint constraint : constraints) {
+                List<String> unique = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
+                Map<Integer, String> target = unique.stream().collect(Collectors.toMap(x -> table.getHeads().get(x).getIndex(), insertData::get));
+                if (Select.exitDataOneLine(db, table.getName(), target)) {
+                    String message = "Duplicate entry '(" + String.join(", ", unique) + ")' for key '" + table.getName() + ".UNIQUE'";
+                    throw new YangSQLException(message);
+                }
+            }
+        }
+        // 检查非空约束
+        if (table.getConstraints().get(1).size() > 0) {
+            constraints = table.getConstraints().get(1);
+            for (ASTConstraint constraint : constraints) {
+                List<String> notNull = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
+                for (String s : notNull) {
+                    if (!insertData.containsKey(s)) {
+                        String message = "Field '" + String.join(", ", notNull) + "' doesn't have a default value for key '" + table.getName() + ".NOT NULL'";
+                        throw new YangSQLException(message);
+                    }
+                }
+            }
+        }
+        // 检查外键
+        if (table.getConstraints().get(3).size() > 0) {
+            constraints = table.getConstraints().get(3);
+            for (ASTConstraint constraint : constraints) {
+                List<String> foreignKey = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
+                for (String s : foreignKey) {
+                    Map<Integer, String> target = new HashMap<>();
+                    target.put(table.getHeads().get(s).getIndex(), insertData.get(s));
+                    if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), target)) {
+                        throw new YangSQLException(s + "列约束：外键" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")不存在" + insertData.get(s));
+                    }
+                }
+            }
+        }
     }
+
+    public static Map<Integer, List<ASTConstraint>> parseField(List<Head> heads, ASTColList colList) {
+        Map<Integer, List<ASTConstraint>> cons = new HashMap<>();
+        for (int i = 0; i <= 4; i++) {
+            List<ASTConstraint> constraintList = new ArrayList<>();
+            cons.put(i, constraintList);
+        }
+        for (ASTField field : colList.getFields()) {
+            Head head = new Head();
+            head.setName(field.getName());
+            head.setDataType(field.getDataType());
+            head.setIndex(field.getIndex());
+            if (field.getConstraints() != null) {
+                head.setConstraints(field.getConstraints().getConstraintList());
+                for (ASTConstraint constraint : field.getConstraints().getConstraintList()) {
+                    ASTColumnName columnName = new ASTColumnName();
+                    columnName.setName(field.getName());
+                    if (constraint.getType() == 3) {
+                        constraint.setForeignKeyColumn(columnName);
+                    } else {
+                        ASTColumnList columnList = new ASTColumnList();
+                        columnList.getColumnNames().add(columnName);
+                        constraint.setColumnList(columnList);
+                    }
+                    cons.get(constraint.getType()).add(constraint);
+                }
+            }
+            heads.add(head);
+        }
+        return cons;
+    }
+
+    public static void parseTableCons(Map<Integer, List<ASTConstraint>> cons, List<Head> heads, ASTConstraints constraints) throws YangSQLException {
+        if (constraints == null || constraints.getConstraintList().size() == 0) {
+            return;
+        }
+        for (ASTConstraint constraint : constraints.getConstraintList()) {
+            List<String> columns = heads.stream().map(Head::getName).collect(Collectors.toList());
+            for (ASTColumnName columnName : constraint.getColumnList().getColumnNames()) {
+                if (!columns.contains(columnName.getName())) {
+                    throw new YangSQLException("Unknown column: '" + columnName.getName() + "'");
+                }
+            }
+            cons.get(constraint.getType()).add(constraint);
+        }
+    }
+
+    public static void validForeignKey(String db, Table table, List<Head> heads, List<ASTConstraint> constraintList) throws YangSQLException {
+        if (constraintList == null || constraintList.size() == 0) {
+            return;
+        }
+        Map<String, Head> headMap = heads.stream().collect(Collectors.toMap(Head::getName, t -> t));
+        for (ASTConstraint constraint : constraintList) {
+            Head head = headMap.get(constraint.getForeignKeyColumn().getName());
+            if (constraint.getTableName().getName().equals(table.getName())) {
+                // 外键在本表中
+                boolean exist = false;
+                for (Head head1 : heads) {
+                    if (head1.getName().equals(constraint.getColumnName().getName())) {
+                        exist = true;
+                        break;
+                    }
+                }
+                if (!exist) {
+                    throw new YangSQLException(head.getName() + "列外键创建失败, Unknown table : " + constraint.getTableName().getName());
+                }
+            } else if (!new File(getMetaPath(db, constraint.getTableName().getName())).exists()) {
+                throw new YangSQLException(head.getName() + "列外键创建失败, Unknown table : " + constraint.getTableName().getName());
+            } else {
+                // 外表查找外键
+                Head head1 = getHead(db, constraint.getTableName().getName(), constraint.getColumnName().getName());
+                if (head1 == null || !head1.getDataType().equals(head.getDataType())) {
+                    throw new YangSQLException(head.getName() + "列外键创建失败" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")数据类型不一样");
+                }
+            }
+        }
+    }
+
 
     /**
      * 处理见表语句
@@ -185,50 +291,12 @@ public class CreateAndInsert {
         Table table = new Table();
         table.setName(createStmt.getTableName());
         List<Head> heads = new ArrayList<>();
-        for (ASTField field : createStmt.getColList().getFields()) {
-            Head head = new Head();
-            head.setName(field.getName());
-            head.setDataType(field.getDataType());
-            head.setIndex(field.getIndex());
-            if (field.getConstraints() != null) {
-                head.setConstraints(field.getConstraints().getConstraintList());
-            }
-            heads.add(head);
-        }
-        for (Head head : heads) {
-            // 约束是否重复
-            List<Integer> integers = head.getCons();
-            if (integers.size() != integers.stream().distinct().count()) {
-                throw new YangSQLException("Constraints for column '" + head.getName() + "' is repeated");
-            }
-            // 是否存在外键约束
-            if (head.getCons().contains(3)) {
-                ASTConstraint constraint = head.getConsByType(3);
-                if (constraint.getTableName().getName().equals(table.getName())) {
-                    // 外键在本表中
-                    boolean exist = false;
-                    for (Head head1 : heads) {
-                        if (head1.getName().equals(constraint.getColumnName().getName())) {
-                            exist = true;
-                            break;
-                        }
-                    }
-                    if (!exist) {
-                        throw new YangSQLException(head.getName() + "列外键创建失败, Unknown table : " + constraint.getTableName().getName());
-                    }
-                } else if (!new File(getMetaPath(db, constraint.getTableName().getName())).exists()) {
-                    throw new YangSQLException(head.getName() + "列外键创建失败, Unknown table : " + constraint.getTableName().getName());
-                } else {
-                    // 外表查找外键
-                    Head head1 = getHead(db, constraint.getTableName().getName(), constraint.getColumnName().getName());
-                    if (head1 == null || !head1.getDataType().equals(head.getDataType())) {
-                        throw new YangSQLException(head.getName() + "列外键创建失败" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")数据类型不一样");
-                    }
-                }
-            }
-        }
+        Map<Integer, List<ASTConstraint>> cons = parseField(heads, createStmt.getColList());
+        parseTableCons(cons, heads, createStmt.getColList().getConstraints());
+        validForeignKey(db, table, heads, cons.get(3));
         Map<String, Head> headMap = heads.stream().collect(Collectors.toMap(Head::getName, t -> t));
         table.setHeads(headMap);
+        table.setConstraints(cons);
         try {
             createTable(db, table);
         } catch (IOException e) {

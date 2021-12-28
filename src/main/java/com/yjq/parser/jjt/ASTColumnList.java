@@ -4,12 +4,15 @@ package com.yjq.parser.jjt;
 
 import com.yjq.parser.select.ColumnName;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class ASTColumnList extends SimpleNode {
+@NoArgsConstructor
+public class ASTColumnList extends SimpleNode implements Serializable {
     private List<ASTColumnName> columnNames = new ArrayList<>();
 
     public ASTColumnList(int id) {

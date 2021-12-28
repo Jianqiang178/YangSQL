@@ -1431,16 +1431,17 @@ ASTColList ColList():{/*@bgen(jjtree) ColList */
                       ASTColList jjtn000 = new ASTColList(JJTCOLLIST);
                       boolean jjtc000 = true;
                       jjtree.openNodeScope(jjtn000);
-/*@egen*/ASTField field;int i = 0;}
+/*@egen*/ASTField field;int i = 0; ASTConstraints constraints;}
 {/*@bgen(jjtree) ColList */
     try {
 /*@egen*/
     field = Field(){field.setIndex(i);i++;jjtn000.getFields().add(field);}
-    [(<COMMA>field = Field(){field.setIndex(i);i++;jjtn000.getFields().add(field);})+]/*@bgen(jjtree)*/
-                                                                                      {
-                                                                                        jjtree.closeNodeScope(jjtn000, true);
-                                                                                        jjtc000 = false;
-                                                                                      }
+    [LOOKAHEAD(2)(<COMMA>field = Field(){field.setIndex(i);i++;jjtn000.getFields().add(field);})+]
+    [LOOKAHEAD(2)constraints = TableConstraints(){jjtn000.setConstraints(constraints);}]/*@bgen(jjtree)*/
+                                                                                        {
+                                                                                          jjtree.closeNodeScope(jjtn000, true);
+                                                                                          jjtc000 = false;
+                                                                                        }
 /*@egen*/{return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
@@ -1473,7 +1474,7 @@ ASTField Field():{/*@bgen(jjtree) Field */
 /*@egen*/
     t = <IDENTIFIER>{jjtn000.setName(t.image);}
     (t = <INT>| t = <DATE>| t = <DOUBLE> | t = <CHAR><LEFTPARENTHESES><INTEGER_LITERAL><RIGHTPARENTHESES>)
-    [constraints = Constraints(){jjtn000.setConstraints(constraints);}]/*@bgen(jjtree)*/
+    [constraints = FieldConstraints(){jjtn000.setConstraints(constraints);}]/*@bgen(jjtree)*/
     {
       jjtree.closeNodeScope(jjtn000, true);
       jjtc000 = false;
@@ -1501,19 +1502,19 @@ ASTField Field():{/*@bgen(jjtree) Field */
     }
 /*@egen*/
 }
-ASTConstraints Constraints():{/*@bgen(jjtree) Constraints */
-                              ASTConstraints jjtn000 = new ASTConstraints(JJTCONSTRAINTS);
-                              boolean jjtc000 = true;
-                              jjtree.openNodeScope(jjtn000);
+ASTConstraints FieldConstraints():{/*@bgen(jjtree) FieldConstraints */
+                                   ASTFieldConstraints jjtn000 = new ASTFieldConstraints(JJTFIELDCONSTRAINTS);
+                                   boolean jjtc000 = true;
+                                   jjtree.openNodeScope(jjtn000);
 /*@egen*/ASTConstraint constraint;}
-{/*@bgen(jjtree) Constraints */
+{/*@bgen(jjtree) FieldConstraints */
     try {
 /*@egen*/
-    constraint = Constraint(){jjtn000.getConstraintList().add(constraint);} [(constraint = Constraint(){jjtn000.getConstraintList().add(constraint);})+]/*@bgen(jjtree)*/
-                                                                                                                                                        {
-                                                                                                                                                          jjtree.closeNodeScope(jjtn000, true);
-                                                                                                                                                          jjtc000 = false;
-                                                                                                                                                        }
+    constraint = FieldConstraint(){jjtn000.getConstraintList().add(constraint);} [(constraint = FieldConstraint(){jjtn000.getConstraintList().add(constraint);})+]/*@bgen(jjtree)*/
+                                                                                                                                                                  {
+                                                                                                                                                                    jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                                                                    jjtc000 = false;
+                                                                                                                                                                  }
 /*@egen*/{return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
@@ -1536,39 +1537,128 @@ ASTConstraints Constraints():{/*@bgen(jjtree) Constraints */
     }
 /*@egen*/
 }
-ASTConstraint Constraint():{/*@bgen(jjtree) Constraint */
-                            ASTConstraint jjtn000 = new ASTConstraint(JJTCONSTRAINT);
-                            boolean jjtc000 = true;
-                            jjtree.openNodeScope(jjtn000);
-/*@egen*/ASTTableName tableName; ASTColumnName columnName;}
-{/*@bgen(jjtree) Constraint */
+ASTConstraints TableConstraints():{/*@bgen(jjtree) TableConstraints */
+                                   ASTTableConstraints jjtn000 = new ASTTableConstraints(JJTTABLECONSTRAINTS);
+                                   boolean jjtc000 = true;
+                                   jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTConstraint constraint;}
+{/*@bgen(jjtree) TableConstraints */
     try {
 /*@egen*/
-    (<NOT> <NULL>/*@bgen(jjtree)*/
-                 {
-                   jjtree.closeNodeScope(jjtn000, true);
-                   jjtc000 = false;
-                 }
-/*@egen*/{jjtn000.setType(1);return jjtn000;})
-    |(<PRIMARY> <KEY>/*@bgen(jjtree)*/
-                     {
-                       jjtree.closeNodeScope(jjtn000, true);
-                       jjtc000 = false;
-                     }
-/*@egen*/{jjtn000.setType(2);return jjtn000;})
-    |(<FOREIGN> <KEY> <REFERENCES> tableName = TableName(){jjtn000.setTableName(tableName);} <LEFTPARENTHESES> columnName = ColumnName(){jjtn000.setColumnName(columnName);} <RIGHTPARENTHESES>/*@bgen(jjtree)*/
-                                                                                                                                                                                               {
-                                                                                                                                                                                                 jjtree.closeNodeScope(jjtn000, true);
-                                                                                                                                                                                                 jjtc000 = false;
-                                                                                                                                                                                               }
+    <COMMA> constraint = TableConstraint(){jjtn000.getConstraintList().add(constraint);} [<COMMA> (constraint = TableConstraint(){jjtn000.getConstraintList().add(constraint);})+]/*@bgen(jjtree)*/
+                                                                                                                                                                                  {
+                                                                                                                                                                                    jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                                                                                    jjtc000 = false;
+                                                                                                                                                                                  }
+/*@egen*/{return jjtn000;}/*@bgen(jjtree)*/
+    } catch (Throwable jjte000) {
+      if (jjtc000) {
+        jjtree.clearNodeScope(jjtn000);
+        jjtc000 = false;
+      } else {
+        jjtree.popNode();
+      }
+      if (jjte000 instanceof RuntimeException) {
+        throw (RuntimeException)jjte000;
+      }
+      if (jjte000 instanceof ParseException) {
+        throw (ParseException)jjte000;
+      }
+      throw (Error)jjte000;
+    } finally {
+      if (jjtc000) {
+        jjtree.closeNodeScope(jjtn000, true);
+      }
+    }
+/*@egen*/
+}
+ASTConstraint TableConstraint():{/*@bgen(jjtree) TableConstraint */
+                                 ASTTableConstraint jjtn000 = new ASTTableConstraint(JJTTABLECONSTRAINT);
+                                 boolean jjtc000 = true;
+                                 jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTTableName tableName; ASTColumnName columnName; ASTColumnList columnList;}
+{/*@bgen(jjtree) TableConstraint */
+    try {
+/*@egen*/
+    LOOKAHEAD(3)(<NOT> <NULL> [<LEFTPARENTHESES> columnList = ColumnList() {jjtn000.setColumnList(columnList);}<RIGHTPARENTHESES>]/*@bgen(jjtree)*/
+                                                                                                                                   {
+                                                                                                                                     jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                                     jjtc000 = false;
+                                                                                                                                   }
+/*@egen*/ {jjtn000.setType(1);return jjtn000;})
+    | LOOKAHEAD(3)(<PRIMARY> <KEY> [<LEFTPARENTHESES> columnList = ColumnList() {jjtn000.setColumnList(columnList);}<RIGHTPARENTHESES>]/*@bgen(jjtree)*/
+                                                                                                                                         {
+                                                                                                                                           jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                                           jjtc000 = false;
+                                                                                                                                         }
+/*@egen*/  {jjtn000.setType(2);return jjtn000;})
+    | LOOKAHEAD(3)(<FOREIGN> <KEY> [<LEFTPARENTHESES> columnName = ColumnName(){jjtn000.setForeignKeyColumn(columnName);}<RIGHTPARENTHESES>]<REFERENCES> tableName = TableName(){jjtn000.setTableName(tableName);} <LEFTPARENTHESES> columnName = ColumnName(){jjtn000.setColumnName(columnName);} <RIGHTPARENTHESES>/*@bgen(jjtree)*/
+                                                                                                                                                                                                                                                                                                                     {
+                                                                                                                                                                                                                                                                                                                       jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                                                                                                                                                                                                                       jjtc000 = false;
+                                                                                                                                                                                                                                                                                                                     }
 /*@egen*/{jjtn000.setType(3);return jjtn000;})
-    | <UNIQUE>{jjtn000.setType(4);}/*@bgen(jjtree)*/
+    | LOOKAHEAD(2)(<UNIQUE> [<LEFTPARENTHESES> columnList = ColumnList() {jjtn000.setColumnList(columnList);}<RIGHTPARENTHESES>]  {jjtn000.setType(4);}/*@bgen(jjtree)*/
     {
       jjtree.closeNodeScope(jjtn000, true);
       jjtc000 = false;
     }
 /*@egen*/
-    {return jjtn000;}/*@bgen(jjtree)*/
+    {return jjtn000;})/*@bgen(jjtree)*/
+    } catch (Throwable jjte000) {
+      if (jjtc000) {
+        jjtree.clearNodeScope(jjtn000);
+        jjtc000 = false;
+      } else {
+        jjtree.popNode();
+      }
+      if (jjte000 instanceof RuntimeException) {
+        throw (RuntimeException)jjte000;
+      }
+      if (jjte000 instanceof ParseException) {
+        throw (ParseException)jjte000;
+      }
+      throw (Error)jjte000;
+    } finally {
+      if (jjtc000) {
+        jjtree.closeNodeScope(jjtn000, true);
+      }
+    }
+/*@egen*/
+}
+ASTConstraint FieldConstraint():{/*@bgen(jjtree) FieldConstraint */
+                                 ASTFieldConstraint jjtn000 = new ASTFieldConstraint(JJTFIELDCONSTRAINT);
+                                 boolean jjtc000 = true;
+                                 jjtree.openNodeScope(jjtn000);
+/*@egen*/ASTTableName tableName; ASTColumnName columnName; ASTColumnList columnList;}
+{/*@bgen(jjtree) FieldConstraint */
+    try {
+/*@egen*/
+    (<NOT> <NULL>/*@bgen(jjtree)*/
+                  {
+                    jjtree.closeNodeScope(jjtn000, true);
+                    jjtc000 = false;
+                  }
+/*@egen*/ {jjtn000.setType(1);return jjtn000;})
+    | (<PRIMARY> <KEY>/*@bgen(jjtree)*/
+                       {
+                         jjtree.closeNodeScope(jjtn000, true);
+                         jjtc000 = false;
+                       }
+/*@egen*/ {jjtn000.setType(2);return jjtn000;})
+    | (<FOREIGN> <KEY> <REFERENCES> tableName = TableName(){jjtn000.setTableName(tableName);} <LEFTPARENTHESES> columnName = ColumnName(){jjtn000.setColumnName(columnName);} <RIGHTPARENTHESES>/*@bgen(jjtree)*/
+                                                                                                                                                                                                {
+                                                                                                                                                                                                  jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                                                                                                  jjtc000 = false;
+                                                                                                                                                                                                }
+/*@egen*/{jjtn000.setType(3);return jjtn000;})
+    | (<UNIQUE> {jjtn000.setType(4);}/*@bgen(jjtree)*/
+    {
+      jjtree.closeNodeScope(jjtn000, true);
+      jjtc000 = false;
+    }
+/*@egen*/
+    {return jjtn000;})/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
         jjtree.clearNodeScope(jjtn000);

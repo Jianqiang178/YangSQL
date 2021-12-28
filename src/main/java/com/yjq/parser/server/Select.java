@@ -9,14 +9,13 @@ import com.yjq.parser.jjt.ASTFromTable;
 import com.yjq.parser.jjt.ASTResultColumn;
 import com.yjq.parser.jjt.ASTSelectStmt;
 import com.yjq.parser.utils.ConsoleTable;
-import com.yjq.parser.utils.TableUtils;
-import io.bretty.console.table.Alignment;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class Select {
@@ -172,6 +171,28 @@ public class Select {
         return strings[index].equals(target);
     }
 
+    public static Boolean exitDataOneLine(Table table, String line, Map<Integer, String> target) {
+        String[] strings = line.split("\t");
+        assert strings.length == table.getHeads().size();
+        for (Integer integer : target.keySet()) {
+            if (!strings[integer].equals(target.get(integer))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static Boolean notNullDataOneLine(Table table, String line, List<Integer> index) {
+        String[] strings = line.split("\t");
+        assert strings.length == table.getHeads().size();
+        for (Integer integer : index) {
+            if (strings[integer] != null || !"".equals(strings[integer])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * 某列是否存在某值
      *
@@ -181,10 +202,9 @@ public class Select {
      * @param target
      * @return
      */
-    public static boolean exitDataOneLine(String db, String tableName, String name, String target) {
+    public static boolean exitDataOneLine(String db, String tableName, Map<Integer, String> target) {
         String dataPath = CreateAndInsert.getDataPath(db, tableName);
         Table table = CreateAndInsert.readTableMeta(db, tableName);
-        int index = table.getHeads().get(name).getIndex();
         File file = new File(dataPath);
         BufferedReader reader = null;
         boolean exist = false;
@@ -192,7 +212,7 @@ public class Select {
             reader = new BufferedReader(new FileReader(file));
             String tempStr;
             while ((tempStr = reader.readLine()) != null) {
-                exist = exitDataOneLine(table, tempStr, index, target);
+                exist = exitDataOneLine(table, tempStr, target);
                 if (exist) {
                     break;
                 }
@@ -210,6 +230,36 @@ public class Select {
             }
         }
         return exist;
+    }
+
+    public static boolean notNullDataOneLine(String db, String tableName, List<Integer> index) {
+        String dataPath = CreateAndInsert.getDataPath(db, tableName);
+        Table table = CreateAndInsert.readTableMeta(db, tableName);
+        File file = new File(dataPath);
+        BufferedReader reader = null;
+        boolean isNull = false;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+            String tempStr;
+            while ((tempStr = reader.readLine()) != null) {
+                isNull = notNullDataOneLine(table, tempStr, index);
+                if (isNull) {
+                    break;
+                }
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
+        return isNull;
     }
 
     /**

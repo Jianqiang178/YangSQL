@@ -40,8 +40,10 @@ public interface SQLParserVisitor
   public Object visit(ASTCreateStmt node, Object data);
   public Object visit(ASTColList node, Object data);
   public Object visit(ASTField node, Object data);
-  public Object visit(ASTConstraints node, Object data);
-  public Object visit(ASTConstraint node, Object data);
+  public Object visit(ASTFieldConstraints node, Object data);
+  public Object visit(ASTTableConstraints node, Object data);
+  public Object visit(ASTTableConstraint node, Object data);
+  public Object visit(ASTFieldConstraint node, Object data);
   public Object visit(ASTDropT node, Object data);
   public Object visit(ASTDeleteStmt node, Object data);
   public Object visit(ASTUpdateStmt node, Object data);
@@ -55,4 +57,4 @@ public interface SQLParserVisitor
   public Object visit(ASTPattern node, Object data);
   public Object visit(ASTIDENTIFIER node, Object data);
 }
-/* JavaCC - OriginalChecksum=0d1e30dd1504264b8523799957e9c375 (do not edit this line) */
+/* JavaCC - OriginalChecksum=43c0e0aeb341f7af6ec5c98dd86301c9 (do not edit this line) */

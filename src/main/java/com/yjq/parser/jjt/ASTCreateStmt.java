@@ -10,6 +10,7 @@ import java.util.List;
 public class ASTCreateStmt extends SimpleNode {
     private String tableName;
     private ASTColList colList;
+    private ASTConstraints constraints = null;
     public ASTCreateStmt(int id) {
         super(id);
     }

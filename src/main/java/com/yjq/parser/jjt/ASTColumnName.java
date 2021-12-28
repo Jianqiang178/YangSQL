@@ -5,12 +5,14 @@ package com.yjq.parser.jjt;
 import com.yjq.parser.data.GridData;
 import com.yjq.parser.exceptions.YangSQLException;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Locale;
 import java.util.Map;
 
 @Data
+@NoArgsConstructor
 public class ASTColumnName extends SimpleNode implements Serializable {
     private String name = null;
     private Boolean haveTable = null;

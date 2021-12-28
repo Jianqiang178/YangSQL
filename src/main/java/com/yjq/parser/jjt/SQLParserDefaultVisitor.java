@@ -117,10 +117,16 @@ public class SQLParserDefaultVisitor implements SQLParserVisitor{
   public Object visit(ASTField node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTConstraints node, Object data){
+  public Object visit(ASTFieldConstraints node, Object data){
     return defaultVisit(node, data);
   }
-  public Object visit(ASTConstraint node, Object data){
+  public Object visit(ASTTableConstraints node, Object data){
+    return defaultVisit(node, data);
+  }
+  public Object visit(ASTTableConstraint node, Object data){
+    return defaultVisit(node, data);
+  }
+  public Object visit(ASTFieldConstraint node, Object data){
     return defaultVisit(node, data);
   }
   public Object visit(ASTDropT node, Object data){
@@ -160,4 +166,4 @@ public class SQLParserDefaultVisitor implements SQLParserVisitor{
     return defaultVisit(node, data);
   }
 }
-/* JavaCC - OriginalChecksum=64aef2e29d181cc316dd41fd496033af (do not edit this line) */
+/* JavaCC - OriginalChecksum=8e87d12b53f6b3de822f0194807e9103 (do not edit this line) */

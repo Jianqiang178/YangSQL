@@ -10,6 +10,8 @@ import java.util.List;
 @Data
 public class ASTColList extends SimpleNode {
     private List<ASTField> fields = new ArrayList<>();
+    private ASTConstraints constraints;
+
     public ASTColList(int id) {
         super(id);
     }

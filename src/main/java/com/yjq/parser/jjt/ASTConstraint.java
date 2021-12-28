@@ -10,7 +10,9 @@ import java.io.Serializable;
 public class ASTConstraint extends SimpleNode implements Serializable {
     private Integer type;
     private ASTTableName tableName;
+    private ASTColumnName foreignKeyColumn;
     private ASTColumnName columnName;
+    private ASTColumnList columnList;
     public ASTConstraint(int id) {
         super(id);
     }
