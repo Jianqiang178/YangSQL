@@ -53,7 +53,7 @@ public class ASTColumnName extends SimpleNode implements Serializable {
         boolean find = false;
         for (Map.Entry<String, GridData> entry : dataMap.entrySet()) {
 //            System.out.println("key = " + entry.getKey() + ", value = " + entry.getValue());
-            if (entry.getKey().equals(getNameWithTable())) {
+            if (entry.getKey().equals(getNameWithTable()) || entry.getValue().getColumnName().equals(getNameWithTable())) {
                 ASTValue value1 = new ASTValue();
                 ASTData data = new ASTData();
                 String type = entry.getValue().getDataType();

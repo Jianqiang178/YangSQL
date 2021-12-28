@@ -150,7 +150,7 @@ void Function():{}
 }
 ASTStringLiteral StringLiteral():{Token t;}
 {
-    <LQUOTATION>(t = <STRING> | t = <IDENTIFIER>) {jjtThis.setValue(t.image);}<LQUOTATION>{return jjtThis;}
+    <LQUOTATION>[(t = <STRING> | t = <IDENTIFIER> | t = <INTEGER_LITERAL>| t = <FLOAT_LITERAL>){jjtThis.setValue(t.image);}]<LQUOTATION>{return jjtThis;}
 }
 ASTNumericLiteral NumericLiteral():{Token t;}
 {
@@ -439,8 +439,8 @@ ASTCreateStmt CreateStmt():{Token t;ASTColList colList;}
 ASTColList ColList():{ASTField field;int i = 0; ASTConstraints constraints;}
 {
     field = Field(){field.setIndex(i);i++;jjtThis.getFields().add(field);}
-    [LOOKAHEAD(2)(<COMMA>field = Field(){field.setIndex(i);i++;jjtThis.getFields().add(field);})+]
-    [LOOKAHEAD(2)constraints = TableConstraints(){jjtThis.setConstraints(constraints);}]{return jjtThis;}
+    [(LOOKAHEAD(2)<COMMA>field = Field(){field.setIndex(i);i++;jjtThis.getFields().add(field);})+]
+    [LOOKAHEAD(2)<COMMA>constraints = TableConstraints(){jjtThis.setConstraints(constraints);}]{return jjtThis;}
 }
 ASTField Field():{Token t; ASTConstraints constraints;}
 {
@@ -455,14 +455,14 @@ ASTConstraints FieldConstraints():{ASTConstraint constraint;}
 }
 ASTConstraints TableConstraints():{ASTConstraint constraint;}
 {
-    <COMMA> constraint = TableConstraint(){jjtThis.getConstraintList().add(constraint);} [<COMMA> (constraint = TableConstraint(){jjtThis.getConstraintList().add(constraint);})+]{return jjtThis;}
+    constraint = TableConstraint(){jjtThis.getConstraintList().add(constraint);} [(<COMMA> constraint = TableConstraint(){jjtThis.getConstraintList().add(constraint);})+]{return jjtThis;}
 }
 ASTConstraint TableConstraint():{ASTTableName tableName; ASTColumnName columnName; ASTColumnList columnList;}
 {
-    LOOKAHEAD(3)(<NOT> <NULL> [<LEFTPARENTHESES> columnList = ColumnList() {jjtThis.setColumnList(columnList);}<RIGHTPARENTHESES>] {jjtThis.setType(1);return jjtThis;})
-    | LOOKAHEAD(3)(<PRIMARY> <KEY> [<LEFTPARENTHESES> columnList = ColumnList() {jjtThis.setColumnList(columnList);}<RIGHTPARENTHESES>]  {jjtThis.setType(2);return jjtThis;})
-    | LOOKAHEAD(3)(<FOREIGN> <KEY> [<LEFTPARENTHESES> columnName = ColumnName(){jjtThis.setForeignKeyColumn(columnName);}<RIGHTPARENTHESES>]<REFERENCES> tableName = TableName(){jjtThis.setTableName(tableName);} <LEFTPARENTHESES> columnName = ColumnName(){jjtThis.setColumnName(columnName);} <RIGHTPARENTHESES>{jjtThis.setType(3);return jjtThis;})
-    | LOOKAHEAD(2)(<UNIQUE> [<LEFTPARENTHESES> columnList = ColumnList() {jjtThis.setColumnList(columnList);}<RIGHTPARENTHESES>]  {jjtThis.setType(4);}
+    LOOKAHEAD(3)(<NOT> <NULL> <LEFTPARENTHESES> columnList = ColumnList() {jjtThis.setColumnList(columnList);}<RIGHTPARENTHESES> {jjtThis.setType(1);return jjtThis;})
+    | LOOKAHEAD(3)(<PRIMARY> <KEY> <LEFTPARENTHESES> columnList = ColumnList() {jjtThis.setColumnList(columnList);}<RIGHTPARENTHESES>  {jjtThis.setType(2);return jjtThis;})
+    | LOOKAHEAD(3)(<FOREIGN> <KEY> <LEFTPARENTHESES> columnName = ColumnName(){jjtThis.setForeignKeyColumn(columnName);}<RIGHTPARENTHESES><REFERENCES> tableName = TableName(){jjtThis.setTableName(tableName);} <LEFTPARENTHESES> columnName = ColumnName(){jjtThis.setColumnName(columnName);} <RIGHTPARENTHESES>{jjtThis.setType(3);return jjtThis;})
+    | LOOKAHEAD(2)(<UNIQUE> <LEFTPARENTHESES> columnList = ColumnList() {jjtThis.setColumnList(columnList);}<RIGHTPARENTHESES> {jjtThis.setType(4);}
     {return jjtThis;})
 }
 ASTConstraint FieldConstraint():{ASTTableName tableName; ASTColumnName columnName; ASTColumnList columnList;}

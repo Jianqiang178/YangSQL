@@ -109,6 +109,9 @@ public class Update {
                 String foreignKey = constraint.getForeignKeyColumn().getName();
                 Map<Integer, String> target1 = new HashMap<>();
                 Table foreignTable = CreateAndInsert.readTableMeta(db, constraint.getTableName().getName());
+                if (!updateData.containsKey(foreignKey) || "".equals(updateData.get(foreignKey))) {
+                    break;
+                }
                 target1.put(foreignTable.getHeads().get(constraint.getColumnName().getName()).getIndex(), updateData.get(foreignKey));
                 if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), target1)) {
                     String message = "Cannot add or update a child row: a foreign key constraint fails ( FOREIGN KEY ('" + foreignKey + "')" + "REFERENCES" + foreignTable.getName() + "('" + constraint.getColumnName().getName() + "')";

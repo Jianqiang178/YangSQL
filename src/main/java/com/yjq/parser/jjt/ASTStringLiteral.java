@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ASTStringLiteral extends SimpleNode {
-    private String value;
+    private String value = "";
 
     public ASTStringLiteral(int id) {
         super(id);

@@ -193,6 +193,9 @@ public class CreateAndInsert {
                 String foreignKey = constraint.getForeignKeyColumn().getName();
                 Map<Integer, String> target1 = new HashMap<>();
                 Table foreignTable = CreateAndInsert.readTableMeta(db, constraint.getTableName().getName());
+                if (!insertData.containsKey(foreignKey) || "".equals(insertData.get(foreignKey))) {
+                    break;
+                }
                 target1.put(foreignTable.getHeads().get(constraint.getColumnName().getName()).getIndex(), insertData.get(foreignKey));
                 if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), target1)) {
                     String message = "Cannot add or update a child row: a foreign key constraint fails ( FOREIGN KEY ('" + foreignKey + "')" + "REFERENCES" + foreignTable.getName() + "('" + constraint.getColumnName().getName() + "')";
@@ -239,9 +242,15 @@ public class CreateAndInsert {
         }
         for (ASTConstraint constraint : constraints.getConstraintList()) {
             List<String> columns = heads.stream().map(Head::getName).collect(Collectors.toList());
-            for (ASTColumnName columnName : constraint.getColumnList().getColumnNames()) {
-                if (!columns.contains(columnName.getName())) {
-                    throw new YangSQLException("Unknown column: '" + columnName.getName() + "'");
+            if (constraint.getColumnList() != null) {
+                for (ASTColumnName columnName : constraint.getColumnList().getColumnNames()) {
+                    if (!columns.contains(columnName.getName())) {
+                        throw new YangSQLException("Unknown column: '" + columnName.getName() + "'");
+                    }
+                }
+            } else if (constraint.getColumnName() != null) {
+                if (!columns.contains(constraint.getColumnName().getName())) {
+                    throw new YangSQLException("Unknown column: '" + constraint.getColumnName().getName() + "'");
                 }
             }
             cons.get(constraint.getType()).add(constraint);
