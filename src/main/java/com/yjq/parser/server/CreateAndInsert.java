@@ -204,12 +204,26 @@ public class CreateAndInsert {
             // 是否存在外键约束
             if (head.getCons().contains(3)) {
                 ASTConstraint constraint = head.getConsByType(3);
-                if (!new File(getMetaPath(db, constraint.getTableName().getName())).exists()) {
+                if (constraint.getTableName().getName().equals(table.getName())) {
+                    // 外键在本表中
+                    boolean exist = false;
+                    for (Head head1 : heads) {
+                        if (head1.getName().equals(constraint.getColumnName().getName())) {
+                            exist = true;
+                            break;
+                        }
+                    }
+                    if (!exist) {
+                        throw new YangSQLException(head.getName() + "列外键创建失败, Unknown table : " + constraint.getTableName().getName());
+                    }
+                } else if (!new File(getMetaPath(db, constraint.getTableName().getName())).exists()) {
                     throw new YangSQLException(head.getName() + "列外键创建失败, Unknown table : " + constraint.getTableName().getName());
-                }
-                Head head1 = getHead(db, constraint.getTableName().getName(), constraint.getColumnName().getName());
-                if (head1 == null || !head1.getDataType().equals(head.getDataType())) {
-                    throw new YangSQLException(head.getName() + "列外键创建失败" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")数据类型不一样");
+                } else {
+                    // 外表查找外键
+                    Head head1 = getHead(db, constraint.getTableName().getName(), constraint.getColumnName().getName());
+                    if (head1 == null || !head1.getDataType().equals(head.getDataType())) {
+                        throw new YangSQLException(head.getName() + "列外键创建失败" + constraint.getTableName().getName() + "(" + constraint.getColumnName().getName() + ")数据类型不一样");
+                    }
                 }
             }
         }
