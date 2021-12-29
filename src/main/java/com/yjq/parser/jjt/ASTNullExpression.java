@@ -34,12 +34,16 @@ public class ASTNullExpression extends SimpleNode implements Expression {
     @Override
     public boolean result() {
         if (isNull) {
-            return columnName.getData() == null;
+            return columnName.getData() == null || "".equals(columnName.getData().getValue());
         } else {
             if (not) {
-                return columnName.getData() != null;
+                if(columnName.getData() ==null){
+                    return false;
+                }else {
+                    return !"".equals(columnName.getData().getValue());
+                }
             } else {
-                return columnName.getData() == null;
+                return columnName.getData() == null || "".equals(columnName.getData().getValue());
             }
         }
     }

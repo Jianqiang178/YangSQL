@@ -49,7 +49,7 @@ public class ASTOrderBy extends SimpleNode {
                     for (ASTColumnName columnName : c) {
                         String s = columnName.getNameWithTable();
                         int index = integerMap.get(s);
-                        if (o1.get(index) == null || o1.get(index).getValue() == null) {
+                        if (o1.get(index) == null || o1.get(index).getValue() == null || "".equals(o1.get(index).getValue())) {
                             if (isNulls()) {
                                 if (isNullFirst()) {
                                     return 1;
@@ -59,7 +59,7 @@ public class ASTOrderBy extends SimpleNode {
                             } else {
                                 return -1;
                             }
-                        } else if (o2.get(index) == null || o2.get(index).getValue() == null) {
+                        } else if (o2.get(index) == null || o2.get(index).getValue() == null || "".equals(o2.get(index).getValue())) {
                             if (isNulls()) {
                                 if (isNullFirst()) {
                                     return 1;

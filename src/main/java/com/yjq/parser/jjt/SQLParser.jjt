@@ -66,7 +66,7 @@ SKIP:{"\n"|"\r"|"\r\n"}TOKEN:/*定义关键字*/
     | <IS:"is">
     | <NOT:"not">
     | <ISNULL:"isnull">
-    | <NOTNULL:"NOTNULL">
+    | <NOTNULL:"notnull">
     | <NULL:"null">
     | <OR:"or">
     | <BETWEEN:"between">
