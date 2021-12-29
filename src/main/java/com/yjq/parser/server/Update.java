@@ -45,7 +45,7 @@ public class Update {
                 values.forEach((key, value) -> {
                     result.get(index).get(integerMap.get(key)).setValue(value);
                 });
-                validUpdateCons(db, table, result.get(index), values);
+                validUpdateCons(db, table, result.get(index), values, index);
                 count++;
             }
         }
@@ -60,17 +60,30 @@ public class Update {
      * @param table
      * @throws YangSQLException
      */
-    public static void validUpdateCons(String db, Table table, List<GridData> line, Map<String, String> updateData) throws YangSQLException {
+    public static void validUpdateCons(String db, Table table, List<GridData> line, Map<String, String> updateData, int index) throws YangSQLException {
         // 检查主键
-        Map<Integer, String> target = line.stream().collect(Collectors.toMap(GridData::getIndex, GridData::getValue));
         List<ASTConstraint> constraints = null;
         if (table.getConstraints().get(2).size() > 0) {
             constraints = table.getConstraints().get(2);
             for (ASTConstraint constraint : constraints) {
                 List<String> primary = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
-                if (Select.exitDataOneLine(db, table.getName(), target)) {
-                    String message = "Duplicate entry '(" + String.join(", ", primary) + ")' for key '" + table.getName() + ".PRIMARY'";
-                    throw new YangSQLException(message);
+                boolean pr = true;
+                for (String s : primary) {
+                    if (updateData.containsKey(s)) {
+                        if ("".equals(updateData.get(s))) {
+                            String message = "Field '" + String.join(", ", primary) + "' doesn't have a default value for key '" + table.getName() + ".NOT NULL'";
+                            throw new YangSQLException(message);
+                        }
+                    } else {
+                        pr = false;
+                    }
+                }
+                if (pr) {
+                    Map<Integer, String> target = primary.stream().collect(Collectors.toMap(t -> table.getHeads().get(t).getIndex(), t -> updateData.get(t)));
+                    if (Select.exitDataOneLine(db, table.getName(), target, index)) {
+                        String message = "Duplicate entry '(" + String.join(", ", primary) + ")' for key '" + table.getName() + ".PRIMARY'";
+                        throw new YangSQLException(message);
+                    }
                 }
             }
         }
@@ -79,7 +92,8 @@ public class Update {
             constraints = table.getConstraints().get(4);
             for (ASTConstraint constraint : constraints) {
                 List<String> unique = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
-                if (Select.exitDataOneLine(db, table.getName(), target)) {
+                Map<Integer, String> target = unique.stream().collect(Collectors.toMap(t -> table.getHeads().get(t).getIndex(), t -> updateData.get(t)));
+                if (Select.exitDataOneLine(db, table.getName(), target, index)) {
                     String message = "Duplicate entry '(" + String.join(", ", unique) + ")' for key '" + table.getName() + ".UNIQUE'";
                     throw new YangSQLException(message);
                 }
@@ -91,13 +105,9 @@ public class Update {
             for (ASTConstraint constraint : constraints) {
                 List<String> notNull = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
                 for (String s : notNull) {
-                    for (GridData gridData : line) {
-                        if (gridData.getColumnName().equals(s)) {
-                            if (gridData.getValue() == null || "".equals(gridData.getValue())) {
-                                String message = "Field '" + String.join(", ", notNull) + "' doesn't have a default value for key '" + table.getName() + ".NOT NULL'";
-                                throw new YangSQLException(message);
-                            }
-                        }
+                    if (updateData.containsKey(s) && "".equals(updateData.get(s))) {
+                        String message = "Field '" + String.join(", ", notNull) + "' doesn't have a default value for key '" + table.getName() + ".NOT NULL'";
+                        throw new YangSQLException(message);
                     }
                 }
             }
@@ -110,10 +120,10 @@ public class Update {
                 Map<Integer, String> target1 = new HashMap<>();
                 Table foreignTable = CreateAndInsert.readTableMeta(db, constraint.getTableName().getName());
                 if (!updateData.containsKey(foreignKey) || "".equals(updateData.get(foreignKey))) {
-                    break;
+                    continue;
                 }
                 target1.put(foreignTable.getHeads().get(constraint.getColumnName().getName()).getIndex(), updateData.get(foreignKey));
-                if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), target1)) {
+                if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), target1, -1)) {
                     String message = "Cannot add or update a child row: a foreign key constraint fails ( FOREIGN KEY ('" + foreignKey + "')" + "REFERENCES" + foreignTable.getName() + "('" + constraint.getColumnName().getName() + "')";
                     throw new YangSQLException(message);
                 }

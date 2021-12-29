@@ -154,8 +154,14 @@ public class CreateAndInsert {
             constraints = table.getConstraints().get(2);
             for (ASTConstraint constraint : constraints) {
                 List<String> primary = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
+                for (String s : primary) {
+                    if (!insertData.containsKey(s)) {
+                        String message = "Field '" + String.join(", ", primary) + "' doesn't have a default value for key '" + table.getName() + ".PRIMARY'";
+                        throw new YangSQLException(message);
+                    }
+                }
                 Map<Integer, String> target = primary.stream().collect(Collectors.toMap(x -> table.getHeads().get(x).getIndex(), insertData::get));
-                if (Select.exitDataOneLine(db, table.getName(), target)) {
+                if (Select.exitDataOneLine(db, table.getName(), target, -1)) {
                     String message = "Duplicate entry '(" + String.join(", ", primary) + ")' for key '" + table.getName() + ".PRIMARY'";
                     throw new YangSQLException(message);
                 }
@@ -167,7 +173,7 @@ public class CreateAndInsert {
             for (ASTConstraint constraint : constraints) {
                 List<String> unique = constraint.getColumnList().getColumnNames().stream().map(ASTColumnName::getName).collect(Collectors.toList());
                 Map<Integer, String> target = unique.stream().collect(Collectors.toMap(x -> table.getHeads().get(x).getIndex(), insertData::get));
-                if (Select.exitDataOneLine(db, table.getName(), target)) {
+                if (Select.exitDataOneLine(db, table.getName(), target, -1)) {
                     String message = "Duplicate entry '(" + String.join(", ", unique) + ")' for key '" + table.getName() + ".UNIQUE'";
                     throw new YangSQLException(message);
                 }
@@ -194,10 +200,10 @@ public class CreateAndInsert {
                 Map<Integer, String> target1 = new HashMap<>();
                 Table foreignTable = CreateAndInsert.readTableMeta(db, constraint.getTableName().getName());
                 if (!insertData.containsKey(foreignKey) || "".equals(insertData.get(foreignKey))) {
-                    break;
+                    continue;
                 }
                 target1.put(foreignTable.getHeads().get(constraint.getColumnName().getName()).getIndex(), insertData.get(foreignKey));
-                if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), target1)) {
+                if (!Select.exitDataOneLine(db, constraint.getTableName().getName(), target1, -1)) {
                     String message = "Cannot add or update a child row: a foreign key constraint fails ( FOREIGN KEY ('" + foreignKey + "')" + "REFERENCES" + foreignTable.getName() + "('" + constraint.getColumnName().getName() + "')";
                     throw new YangSQLException(message);
                 }
@@ -304,6 +310,9 @@ public class CreateAndInsert {
     public static void dealCreateStmt(String db, ASTCreateStmt createStmt) throws YangSQLException {
         Table table = new Table();
         table.setName(createStmt.getTableName());
+        if (new File(getTablePath(db, table.getName())).exists()) {
+            throw new YangSQLException("Table '" + table.getName() + "' already exists");
+        }
         List<Head> heads = new ArrayList<>();
         Map<Integer, List<ASTConstraint>> cons = parseField(heads, createStmt.getColList());
         parseTableCons(cons, heads, createStmt.getColList().getConstraints());

@@ -201,7 +201,7 @@ public class Select {
      * @param target
      * @return
      */
-    public static boolean exitDataOneLine(String db, String tableName, Map<Integer, String> target) {
+    public static boolean exitDataOneLine(String db, String tableName, Map<Integer, String> target, int index) {
         String dataPath = CreateAndInsert.getDataPath(db, tableName);
         Table table = CreateAndInsert.readTableMeta(db, tableName);
         File file = new File(dataPath);
@@ -209,12 +209,16 @@ public class Select {
         boolean exist = false;
         try {
             reader = new BufferedReader(new FileReader(file));
+            int i = 0;
             String tempStr;
             while ((tempStr = reader.readLine()) != null) {
-                exist = exitDataOneLine(table, tempStr, target);
-                if (exist) {
-                    break;
+                if (i != index) {
+                    exist = exitDataOneLine(table, tempStr, target);
+                    if (exist) {
+                        break;
+                    }
                 }
+                i++;
             }
             reader.close();
         } catch (IOException e) {
@@ -343,7 +347,7 @@ public class Select {
      */
     public static void outputResult(List<ASTResultColumn> columns, List<List<GridData>> data, boolean destinct) {
         Map<String, Integer> integerMap = new HashMap<>();
-        List<List<String>>res = new ArrayList<>();
+        List<List<String>> res = new ArrayList<>();
         if (data.size() > 0) {
             List<GridData> line = data.get(0);
             for (int i = 0; i < line.size(); i++) {
@@ -382,7 +386,7 @@ public class Select {
 //                table.addRow(ConsoleTable.toArray(temp));
                 res.add(temp);
             }
-            if(destinct){
+            if (destinct) {
                 res = res.stream().distinct().collect(Collectors.toList());
             }
             for (List<String> re : res) {
