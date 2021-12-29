@@ -91,7 +91,7 @@ public class Select {
             }
             result = lists;
         }
-        outputResult(selectStmt.getAstResult().getResultColumns(), result);
+        outputResult(selectStmt.getAstResult().getResultColumns(), result, selectStmt.isDistinct());
     }
 
     /**
@@ -198,7 +198,6 @@ public class Select {
      *
      * @param db
      * @param tableName
-     * @param name
      * @param target
      * @return
      */
@@ -342,8 +341,9 @@ public class Select {
      * @param columns
      * @param data
      */
-    public static void outputResult(List<ASTResultColumn> columns, List<List<GridData>> data) {
+    public static void outputResult(List<ASTResultColumn> columns, List<List<GridData>> data, boolean destinct) {
         Map<String, Integer> integerMap = new HashMap<>();
+        List<List<String>>res = new ArrayList<>();
         if (data.size() > 0) {
             List<GridData> line = data.get(0);
             for (int i = 0; i < line.size(); i++) {
@@ -379,10 +379,18 @@ public class Select {
                     }
                 }
 //                System.out.println();
-                table.addRow(ConsoleTable.toArray(temp));
+//                table.addRow(ConsoleTable.toArray(temp));
+                res.add(temp);
+            }
+            if(destinct){
+                res = res.stream().distinct().collect(Collectors.toList());
+            }
+            for (List<String> re : res) {
+                table.addRow(ConsoleTable.toArray(re));
             }
             table.show();
         }
+
         System.out.println(data.size() + " rows in set");
     }
 

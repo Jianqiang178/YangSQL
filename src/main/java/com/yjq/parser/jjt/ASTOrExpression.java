@@ -5,11 +5,15 @@ package com.yjq.parser.jjt;
 import com.yjq.parser.interfaces.Expression;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 public class ASTOrExpression extends SimpleNode implements Expression {
     private ASTAndExpression left = null;
     private Boolean or = false;
     private ASTAndExpression right = null;
+    private List<ASTAndExpression> expressions = new ArrayList<>();
 
     public ASTOrExpression(int id) {
         super(id);
@@ -31,11 +35,11 @@ public class ASTOrExpression extends SimpleNode implements Expression {
 
     @Override
     public boolean result() {
-        if (or) {
-            return left.result() || right.result();
-        } else {
-            return left.result();
+        boolean res = false;
+        for (ASTAndExpression expression : expressions) {
+            res = res || expression.result();
         }
+        return res;
     }
 }
 /* JavaCC - OriginalChecksum=d0c8aa81caea467f1cfd796e324f4d1d (do not edit this line) */

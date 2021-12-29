@@ -16,7 +16,7 @@ import java.util.Arrays;
 public class SQLParser{
     public static void main(String args[]) {
         CreateAndInsert.initDb();
-        System.out.println("Reading from standard input...");
+        System.out.println("Welcome to the YangSQL monitor.");
         while (true){
             try{
                 SQLParser p = new SQLParser(System.in);
@@ -170,7 +170,6 @@ ASTStatement Statement() : {ASTSelectStmt selectStmt; ASTCreateStmt createStmt; 
 {
     selectStmt = SelectStmt(){jjtThis.setType(1);jjtThis.setAstSelectStmt(selectStmt);return jjtThis;}
     |createStmt = CreateStmt(){jjtThis.setType(2);jjtThis.setCreateStmt(createStmt);return jjtThis;}
-    |DropT(){return jjtThis;}
     |deleteStmt = DeleteStmt(){jjtThis.setType(4);jjtThis.setDeleteStmt(deleteStmt);return jjtThis;}
     |insertStmt = InsertStmt(){jjtThis.setType(5);jjtThis.setInsertStmt(insertStmt);return jjtThis;}
     |updateStmt = UpdateStmt(){jjtThis.setType(6); jjtThis.setUpdateStmt(updateStmt);return jjtThis;}
@@ -187,7 +186,7 @@ ASTSelectStmt SelectStmt():
     ASTLimit limit;
 }
 {
-    <SELECT>[<DISTINCT>]astResult = Result(){jjtThis.setAstResult(astResult);}<FROM>astFromList = FromList(){jjtThis.setAstFromList(astFromList);}
+    <SELECT>[<DISTINCT>{jjtThis.setDistinct(true);}]astResult = Result(){jjtThis.setAstResult(astResult);}<FROM>astFromList = FromList(){jjtThis.setAstFromList(astFromList);}
     [<WHERE> expression = Expression(){jjtThis.setExpression(expression);}| LOOKAHEAD(2)Exist()]
     [GroupBy()] /* Group by having子句 */
     [orderBy = OrderBy(){jjtThis.setOrderBy(orderBy);}] /* Order子句 */
@@ -217,18 +216,18 @@ void ComparisonOperator():{}
 /**
 * 逻辑-and表达式
 */
-ASTAndExpression AndExpression():{ASTCondition condition;}
+ASTAndExpression AndExpression():{ASTCondition condition; boolean nott = false;}
 {
-    [<NOT>{jjtThis.setLeftNot(true);}] condition = Condition(){jjtThis.setLeft(condition);}
-    [<AND>{jjtThis.setAnd(true);}[<NOT>{jjtThis.setRightNot(true);}] condition = Condition(){jjtThis.setRight(condition);}]{return jjtThis;}
+    [<NOT>{nott =true;}] condition = Condition(){jjtThis.getNots().add(nott); nott = false;jjtThis.getConditions().add(condition);}
+    [(<AND>{jjtThis.setAnd(true);}[<NOT>{nott =true;}] condition = Condition(){jjtThis.getNots().add(nott); nott = false;jjtThis.getConditions().add(condition);})+]{return jjtThis;}
 }
 /**
 * 逻辑-or表达式
 */
 ASTOrExpression OrExpression():{ASTAndExpression astAndExpression;}
 {
-    astAndExpression = AndExpression(){jjtThis.setLeft(astAndExpression);}
-    [<OR>{jjtThis.setOr(true);} astAndExpression = AndExpression(){jjtThis.setRight(astAndExpression);}]{return jjtThis;}
+    astAndExpression = AndExpression(){jjtThis.getExpressions().add(astAndExpression);}
+    [(<OR>astAndExpression = AndExpression(){jjtThis.getExpressions().add(astAndExpression);})+]{return jjtThis;}
 }
 /**
 * 空值表达式
@@ -245,7 +244,7 @@ ASTNullExpression NullExpression():{ASTColumnName columnName;}
 ASTLikeExpression LikeExpression():{ASTColumnName columnName;ASTStringLiteral stringLiteral;}
 {
     columnName = ColumnName(){jjtThis.setColumnName(columnName);}
-    [<NOT>{jjtThis.setNot(true);}] <LIKE> stringLiteral = StringLiteral(){jjtThis.setStringLiteral(stringLiteral);return jjtThis;}
+    [LOOKAHEAD(2)<NOT>{jjtThis.setNot(true);}] <LIKE> stringLiteral = StringLiteral(){jjtThis.setStringLiteral(stringLiteral);return jjtThis;}
 }
 /**
 * in判断表达式
@@ -253,7 +252,7 @@ ASTLikeExpression LikeExpression():{ASTColumnName columnName;ASTStringLiteral st
 ASTInExpression InExpression():{ASTColumnName columnName; ASTData data;}
 {
     columnName = ColumnName(){jjtThis.setColumnName(columnName);}
-    [<NOT>{jjtThis.setNot(true);}] <IN> <LEFTPARENTHESES> data = Data(){jjtThis.getData().add(data);} [(<COMMA> data = Data(){jjtThis.getData().add(data);})+]<RIGHTPARENTHESES>{return jjtThis;}
+    [LOOKAHEAD(2)<NOT>{jjtThis.setNot(true);}] <IN> <LEFTPARENTHESES> data = Data(){jjtThis.getData().add(data);} [(<COMMA> data = Data(){jjtThis.getData().add(data);})+]<RIGHTPARENTHESES>{return jjtThis;}
 }
 /**
 * between表达式
@@ -261,7 +260,7 @@ ASTInExpression InExpression():{ASTColumnName columnName; ASTData data;}
 ASTBetweenExpression BetweenExpression():{ASTColumnName columnName; ASTData data;}
 {
     columnName = ColumnName(){jjtThis.setColumnName(columnName);}
-    [<NOT>{jjtThis.setNot(true);}] <BETWEEN> data = Data(){jjtThis.setFirst(data);} <AND> data = Data(){jjtThis.setSecond(data);}
+    [LOOKAHEAD(2)<NOT>{jjtThis.setNot(true);}] <BETWEEN> data = Data(){jjtThis.setFirst(data);} <AND> data = Data(){jjtThis.setSecond(data);}
     {return jjtThis;}
 }
 /**
@@ -314,11 +313,11 @@ ASTCondition Condition():
     ASTNullExpression nullExpression;
 }
 {
-    LOOKAHEAD(2)comparisonExpression = ComparisonExpression(){jjtThis.setExpression(comparisonExpression);return jjtThis;}
-    | LOOKAHEAD(2)inExpression = InExpression(){jjtThis.setExpression(inExpression);return jjtThis;}
-    | LOOKAHEAD(2)betweenExpression = BetweenExpression(){jjtThis.setExpression(betweenExpression);return jjtThis;}
-    | LOOKAHEAD(2)likeExpression = LikeExpression(){jjtThis.setExpression(likeExpression);return jjtThis;}
-    | LOOKAHEAD(2)nullExpression = NullExpression(){jjtThis.setExpression(nullExpression);return jjtThis;}
+    LOOKAHEAD(3)comparisonExpression = ComparisonExpression(){jjtThis.setExpression(comparisonExpression);return jjtThis;}
+    | LOOKAHEAD(3)inExpression = InExpression(){jjtThis.setExpression(inExpression);return jjtThis;}
+    | LOOKAHEAD(3)betweenExpression = BetweenExpression(){jjtThis.setExpression(betweenExpression);return jjtThis;}
+    | LOOKAHEAD(3)likeExpression = LikeExpression(){jjtThis.setExpression(likeExpression);return jjtThis;}
+    | LOOKAHEAD(3)nullExpression = NullExpression(){jjtThis.setExpression(nullExpression);return jjtThis;}
 }
 /**
 * ORDER BY子句

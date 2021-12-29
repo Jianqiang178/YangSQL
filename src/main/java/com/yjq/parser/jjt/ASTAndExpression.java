@@ -6,6 +6,9 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
 import com.yjq.parser.interfaces.Expression;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
 public class ASTAndExpression extends SimpleNode implements Expression {
     private Boolean leftNot = false;
@@ -13,6 +16,8 @@ public class ASTAndExpression extends SimpleNode implements Expression {
     private Boolean and = false;
     private ASTCondition left = null;
     private ASTCondition right = null;
+    private List<ASTCondition> conditions = new ArrayList<>();
+    private List<Boolean> nots = new ArrayList<>();
 
     public ASTAndExpression(int id) {
         super(id);
@@ -34,15 +39,15 @@ public class ASTAndExpression extends SimpleNode implements Expression {
 
     @Override
     public boolean result() {
-        boolean l = left.result();
-        if (leftNot) l = !l;
-        boolean result = l;
-        if (and) {
-            boolean r = right.result();
-            if (rightNot) r = !r;
-            result = l && r;
+        boolean res = true;
+        for (int i = 0; i < conditions.size(); i++) {
+            boolean cres = conditions.get(i).result();
+            if (nots.get(i)) {
+                cres = !cres;
+            }
+            res = res && cres;
         }
-        return result;
+        return res;
     }
 }
 /* JavaCC - OriginalChecksum=7384133b0c0e0c2b52bd56e17f2c86d3 (do not edit this line) */

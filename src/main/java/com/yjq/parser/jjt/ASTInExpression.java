@@ -33,15 +33,21 @@ public class ASTInExpression extends SimpleNode implements Expression {
 
     @Override
     public boolean result() {
+        boolean res = false;
         for (ASTData datum : data) {
             if (columnName.getData() == null) {
-                return false;
+                break;
             }
             if (columnName.getData().getType() == datum.getType() && columnName.getData().getValue().equals(datum.getValue())) {
-                return true;
+                res = true;
+                break;
             }
         }
-        return false;
+        if (not) {
+            return !res;
+        } else {
+            return res;
+        }
     }
 }
 /* JavaCC - OriginalChecksum=8bdc2a6607d34e65b19cedc96a2931b8 (do not edit this line) */

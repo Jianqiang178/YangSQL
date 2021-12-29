@@ -35,7 +35,7 @@ public class ASTComparisonExpression extends SimpleNode implements Expression {
         ASTData right = null;
         if (value.getType() == 4) {
             right = value.getColumnName().getData();
-        }else {
+        } else {
             right = value.getData();
         }
         return operator.compare(left, right);

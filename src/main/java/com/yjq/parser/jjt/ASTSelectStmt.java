@@ -13,6 +13,7 @@ public class ASTSelectStmt extends SimpleNode {
     private ASTExpression expression;
     private ASTOrderBy orderBy = null;
     private ASTLimit limit = null;
+    private boolean distinct = false;
 
     public ASTSelectStmt(int id) {
         super(id);

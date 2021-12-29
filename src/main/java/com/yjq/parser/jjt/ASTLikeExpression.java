@@ -33,6 +33,7 @@ public class ASTLikeExpression extends SimpleNode implements Expression {
 
     @Override
     public boolean result() {
+        boolean res = true;
         if (columnName.getData() == null) {
             return false;
         }
@@ -41,7 +42,12 @@ public class ASTLikeExpression extends SimpleNode implements Expression {
         value = value.replaceAll("%", ".*").replaceAll("_", ".");
         Pattern p = Pattern.compile(value);
         Matcher m = p.matcher(columnName.getData().getValue());
-        return m.matches();
+        res = m.matches();
+        if (not) {
+            return !res;
+        } else {
+            return res;
+        }
     }
 }
 /* JavaCC - OriginalChecksum=8bd446c1d272bb5e370484d978697304 (do not edit this line) */

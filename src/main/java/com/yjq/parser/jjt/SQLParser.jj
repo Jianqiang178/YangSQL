@@ -20,7 +20,7 @@ public class SQLParser/*@bgen(jjtree)*/implements SQLParserTreeConstants/*@egen*
 /*@egen*/
     public static void main(String args[]) {
         CreateAndInsert.initDb();
-        System.out.println("Reading from standard input...");
+        System.out.println("Welcome to the YangSQL monitor.");
         while (true){
             try{
                 SQLParser p = new SQLParser(System.in);
@@ -351,12 +351,6 @@ ASTStatement Statement() : {/*@bgen(jjtree) Statement */
                                 jjtc000 = false;
                               }
 /*@egen*/{jjtn000.setType(2);jjtn000.setCreateStmt(createStmt);return jjtn000;}
-    |DropT()/*@bgen(jjtree)*/
-            {
-              jjtree.closeNodeScope(jjtn000, true);
-              jjtc000 = false;
-            }
-/*@egen*/{return jjtn000;}
     |deleteStmt = DeleteStmt()/*@bgen(jjtree)*/
                               {
                                 jjtree.closeNodeScope(jjtn000, true);
@@ -414,7 +408,7 @@ ASTSelectStmt SelectStmt():
 {/*@bgen(jjtree) SelectStmt */
     try {
 /*@egen*/
-    <SELECT>[<DISTINCT>]astResult = Result(){jjtn000.setAstResult(astResult);}<FROM>astFromList = FromList(){jjtn000.setAstFromList(astFromList);}
+    <SELECT>[<DISTINCT>{jjtn000.setDistinct(true);}]astResult = Result(){jjtn000.setAstResult(astResult);}<FROM>astFromList = FromList(){jjtn000.setAstFromList(astFromList);}
     [<WHERE> expression = Expression(){jjtn000.setExpression(expression);}| LOOKAHEAD(2)Exist()]
     [GroupBy()] /* Group by having\u701b\u612c\u5f5e */
     [orderBy = OrderBy(){jjtn000.setOrderBy(orderBy);}] /* Order\u701b\u612c\u5f5e */
@@ -509,16 +503,16 @@ ASTAndExpression AndExpression():{/*@bgen(jjtree) AndExpression */
                                   ASTAndExpression jjtn000 = new ASTAndExpression(JJTANDEXPRESSION);
                                   boolean jjtc000 = true;
                                   jjtree.openNodeScope(jjtn000);
-/*@egen*/ASTCondition condition;}
+/*@egen*/ASTCondition condition; boolean nott = false;}
 {/*@bgen(jjtree) AndExpression */
     try {
 /*@egen*/
-    [<NOT>{jjtn000.setLeftNot(true);}] condition = Condition(){jjtn000.setLeft(condition);}
-    [<AND>{jjtn000.setAnd(true);}[<NOT>{jjtn000.setRightNot(true);}] condition = Condition(){jjtn000.setRight(condition);}]/*@bgen(jjtree)*/
-                                                                                                                           {
-                                                                                                                             jjtree.closeNodeScope(jjtn000, true);
-                                                                                                                             jjtc000 = false;
-                                                                                                                           }
+    [<NOT>{nott =true;}] condition = Condition(){jjtn000.getNots().add(nott); nott = false;jjtn000.getConditions().add(condition);}
+    [(<AND>{jjtn000.setAnd(true);}[<NOT>{nott =true;}] condition = Condition(){jjtn000.getNots().add(nott); nott = false;jjtn000.getConditions().add(condition);})+]/*@bgen(jjtree)*/
+                                                                                                                                                                    {
+                                                                                                                                                                      jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                                                                      jjtc000 = false;
+                                                                                                                                                                    }
 /*@egen*/{return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
@@ -552,12 +546,12 @@ ASTOrExpression OrExpression():{/*@bgen(jjtree) OrExpression */
 {/*@bgen(jjtree) OrExpression */
     try {
 /*@egen*/
-    astAndExpression = AndExpression(){jjtn000.setLeft(astAndExpression);}
-    [<OR>{jjtn000.setOr(true);} astAndExpression = AndExpression(){jjtn000.setRight(astAndExpression);}]/*@bgen(jjtree)*/
-                                                                                                        {
-                                                                                                          jjtree.closeNodeScope(jjtn000, true);
-                                                                                                          jjtc000 = false;
-                                                                                                        }
+    astAndExpression = AndExpression(){jjtn000.getExpressions().add(astAndExpression);}
+    [(<OR>astAndExpression = AndExpression(){jjtn000.getExpressions().add(astAndExpression);})+]/*@bgen(jjtree)*/
+                                                                                                {
+                                                                                                  jjtree.closeNodeScope(jjtn000, true);
+                                                                                                  jjtc000 = false;
+                                                                                                }
 /*@egen*/{return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
@@ -637,11 +631,11 @@ ASTLikeExpression LikeExpression():{/*@bgen(jjtree) LikeExpression */
     try {
 /*@egen*/
     columnName = ColumnName(){jjtn000.setColumnName(columnName);}
-    [<NOT>{jjtn000.setNot(true);}] <LIKE> stringLiteral = StringLiteral()/*@bgen(jjtree)*/
-                                                                         {
-                                                                           jjtree.closeNodeScope(jjtn000, true);
-                                                                           jjtc000 = false;
-                                                                         }
+    [LOOKAHEAD(2)<NOT>{jjtn000.setNot(true);}] <LIKE> stringLiteral = StringLiteral()/*@bgen(jjtree)*/
+                                                                                     {
+                                                                                       jjtree.closeNodeScope(jjtn000, true);
+                                                                                       jjtc000 = false;
+                                                                                     }
 /*@egen*/{jjtn000.setStringLiteral(stringLiteral);return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
@@ -676,11 +670,11 @@ ASTInExpression InExpression():{/*@bgen(jjtree) InExpression */
     try {
 /*@egen*/
     columnName = ColumnName(){jjtn000.setColumnName(columnName);}
-    [<NOT>{jjtn000.setNot(true);}] <IN> <LEFTPARENTHESES> data = Data(){jjtn000.getData().add(data);} [(<COMMA> data = Data(){jjtn000.getData().add(data);})+]<RIGHTPARENTHESES>/*@bgen(jjtree)*/
-                                                                                                                                                                                {
-                                                                                                                                                                                  jjtree.closeNodeScope(jjtn000, true);
-                                                                                                                                                                                  jjtc000 = false;
-                                                                                                                                                                                }
+    [LOOKAHEAD(2)<NOT>{jjtn000.setNot(true);}] <IN> <LEFTPARENTHESES> data = Data(){jjtn000.getData().add(data);} [(<COMMA> data = Data(){jjtn000.getData().add(data);})+]<RIGHTPARENTHESES>/*@bgen(jjtree)*/
+                                                                                                                                                                                            {
+                                                                                                                                                                                              jjtree.closeNodeScope(jjtn000, true);
+                                                                                                                                                                                              jjtc000 = false;
+                                                                                                                                                                                            }
 /*@egen*/{return jjtn000;}/*@bgen(jjtree)*/
     } catch (Throwable jjte000) {
       if (jjtc000) {
@@ -715,7 +709,7 @@ ASTBetweenExpression BetweenExpression():{/*@bgen(jjtree) BetweenExpression */
     try {
 /*@egen*/
     columnName = ColumnName(){jjtn000.setColumnName(columnName);}
-    [<NOT>{jjtn000.setNot(true);}] <BETWEEN> data = Data(){jjtn000.setFirst(data);} <AND> data = Data(){jjtn000.setSecond(data);}/*@bgen(jjtree)*/
+    [LOOKAHEAD(2)<NOT>{jjtn000.setNot(true);}] <BETWEEN> data = Data(){jjtn000.setFirst(data);} <AND> data = Data(){jjtn000.setSecond(data);}/*@bgen(jjtree)*/
     {
       jjtree.closeNodeScope(jjtn000, true);
       jjtc000 = false;
@@ -933,31 +927,31 @@ ASTCondition Condition():
 {/*@bgen(jjtree) Condition */
     try {
 /*@egen*/
-    LOOKAHEAD(2)comparisonExpression = ComparisonExpression()/*@bgen(jjtree)*/
+    LOOKAHEAD(3)comparisonExpression = ComparisonExpression()/*@bgen(jjtree)*/
                                                              {
                                                                jjtree.closeNodeScope(jjtn000, true);
                                                                jjtc000 = false;
                                                              }
 /*@egen*/{jjtn000.setExpression(comparisonExpression);return jjtn000;}
-    | LOOKAHEAD(2)inExpression = InExpression()/*@bgen(jjtree)*/
+    | LOOKAHEAD(3)inExpression = InExpression()/*@bgen(jjtree)*/
                                                {
                                                  jjtree.closeNodeScope(jjtn000, true);
                                                  jjtc000 = false;
                                                }
 /*@egen*/{jjtn000.setExpression(inExpression);return jjtn000;}
-    | LOOKAHEAD(2)betweenExpression = BetweenExpression()/*@bgen(jjtree)*/
+    | LOOKAHEAD(3)betweenExpression = BetweenExpression()/*@bgen(jjtree)*/
                                                          {
                                                            jjtree.closeNodeScope(jjtn000, true);
                                                            jjtc000 = false;
                                                          }
 /*@egen*/{jjtn000.setExpression(betweenExpression);return jjtn000;}
-    | LOOKAHEAD(2)likeExpression = LikeExpression()/*@bgen(jjtree)*/
+    | LOOKAHEAD(3)likeExpression = LikeExpression()/*@bgen(jjtree)*/
                                                    {
                                                      jjtree.closeNodeScope(jjtn000, true);
                                                      jjtc000 = false;
                                                    }
 /*@egen*/{jjtn000.setExpression(likeExpression);return jjtn000;}
-    | LOOKAHEAD(2)nullExpression = NullExpression()/*@bgen(jjtree)*/
+    | LOOKAHEAD(3)nullExpression = NullExpression()/*@bgen(jjtree)*/
                                                    {
                                                      jjtree.closeNodeScope(jjtn000, true);
                                                      jjtc000 = false;

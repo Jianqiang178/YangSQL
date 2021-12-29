@@ -33,10 +33,14 @@ public class ASTBetweenExpression extends SimpleNode implements Expression {
 
     @Override
     public boolean result() {
-        if (columnName.getData() == null) {
-            return false;
+        boolean res = false;
+        if (columnName.getData() != null) {
+            res = new LessThanOrEqualTo().compare(first, columnName.getData()) && new LessThan().compare(columnName.getData(), second);
+        }
+        if (not) {
+            return !res;
         } else {
-            return new LessThanOrEqualTo().compare(first, columnName.getData()) && new LessThan().compare(columnName.getData(), second);
+            return res;
         }
     }
 }
